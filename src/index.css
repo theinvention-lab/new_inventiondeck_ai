@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'ChangwonDangamRounded';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/ChangwonDangamRound-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------
+   Design tokens — NAVER-informed (brand green, neutral canvas, compact
+   4/8/12/16/20 spacing rhythm — which maps 1:1 onto Tailwind's default
+   numeric scale, p-1..p-5) with ChangwonDangamRounded as the primary
+   UI typeface. Registered via @theme so Tailwind emits matching
+   utilities (bg-brand, text-ink, rounded-lg, shadow-md, font-display…).
+--------------------------------------------------------------------- */
+@theme {
+  /* Brand */
+  --color-brand: #03c75a;
+  --color-brand-strong: #02a94c;
+  --color-brand-soft: #e6f9ee;
+
+  /* Canvas & ink */
+  --color-canvas: #ffffff;
+  --color-canvas-sunken: #f7f8f6;
+  --color-ink: #1c1c1c;
+  --color-ink-strong: #08110c;
+  --color-ink-muted: #6b7280;
+  --color-ink-faint: #8c8c8c;
+  --color-hairline: #e5e5e5;
+  --color-hairline-strong: rgba(0, 0, 0, 0.12);
+
+  /* Semantic */
+  --color-danger: #e0343f;
+  --color-danger-soft: #fdecee;
+  --color-warning: #f5a524;
+  --color-warning-soft: #fef6e6;
+  --color-info: #0c43b7;
+  --color-info-soft: #eef2fc;
+  --color-success: #03c75a;
+  --color-success-soft: #e6f9ee;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  --font-display: 'ChangwonDangamRounded', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-display);
+  background: var(--color-canvas-sunken);
+  color: var(--color-ink);
+  letter-spacing: -0.2px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+::selection {
+  background: var(--color-brand);
+  color: #ffffff;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-hairline-strong);
+  border-radius: var(--radius-full);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease both;
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+.animate-pulse-soft {
+  animation: pulse-soft 1.4s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

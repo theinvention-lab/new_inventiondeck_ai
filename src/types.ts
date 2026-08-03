@@ -1,0 +1,172 @@
+// ---------------------------------------------------------------------------
+// Domain types shared across the app
+// ---------------------------------------------------------------------------
+
+export type CardCategory =
+  | 'industry'
+  | 'customer'
+  | 'problem'
+  | 'businessModel'
+  | 'revenue'
+  | 'technology';
+
+export interface BizCard {
+  id: string;
+  category: CardCategory;
+  title: string;
+  description: string;
+  example: string;
+  tags: string[];
+  popularity: number; // 0-100, used for sorting
+}
+
+export interface IdeaSection {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface IdeaDraft {
+  id: string;
+  title: string;
+  oneLiner: string;
+  customer: string;
+  problem: string;
+  solution: string;
+  valueProp: string;
+  revenue: string;
+  tags: string[];
+  sections: IdeaSection[];
+  createdAt: string;
+}
+
+export interface IdeaVersion {
+  id: string;
+  label: string;
+  savedAt: string;
+  snapshot: IdeaDraft;
+}
+
+export interface GeneratorState {
+  selectedCardIds: string[];
+  interest: string;
+  problemFocus: string;
+  ideas: IdeaDraft[];
+  selectedIdeaId: string | null;
+  versions: IdeaVersion[];
+  cardHistory: string[]; // ids of cards ever selected, for recommendations
+  lastGeneratedAt: string | null;
+}
+
+export type ChatRole = 'user' | 'ai';
+
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  createdAt: string;
+  kind?: 'question' | 'gap' | 'alternative' | 'suggestion' | 'normal';
+}
+
+export type CriterionStatus = 'unmet' | 'partial' | 'met';
+
+export interface CriterionEntry {
+  id: string;
+  name: string;
+  description: string;
+  evidence: string;
+  judgement: string;
+  unresolved: string;
+  nextAction: string;
+  status: CriterionStatus;
+  weight: number;
+  custom?: boolean;
+}
+
+export interface DeveloperVersion {
+  id: string;
+  label: string;
+  savedAt: string;
+  savedBy: string;
+}
+
+export interface DeveloperState {
+  summary: string;
+  targetCustomer: string;
+  userProblem: string;
+  solution: string;
+  evidence: string;
+  assumptions: string;
+  currentConcerns: string;
+  chatMessages: ChatMessage[];
+  criteria: CriterionEntry[];
+  autosaveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  lastSavedAt: string | null;
+  versions: DeveloperVersion[];
+}
+
+export interface PlanSection {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+  aiDraft?: string;
+}
+
+export interface PitchSlide {
+  id: string;
+  title: string;
+  bullets: string[];
+  note: string;
+  order: number;
+  chart?: 'bar' | 'line' | 'none';
+}
+
+export type DesignTemplateId = 'naver-mint' | 'ink-mono' | 'sunrise' | 'slate-pro';
+
+export interface PlannerState {
+  bizPlanSections: PlanSection[];
+  pitchSlides: PitchSlide[];
+  designTemplateId: DesignTemplateId;
+  bizPlanGenerated: boolean;
+  pitchDeckGenerated: boolean;
+  bizPlanProgress: number;
+  pitchDeckProgress: number;
+  lastExport: { type: 'pdf' | 'ppt'; at: string; filename: string } | null;
+}
+
+export type ProjectStage = 'generator' | 'developer' | 'planner' | 'completed';
+
+export interface Project {
+  id: string;
+  ownerEmail: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  stage: ProjectStage;
+  folderId: string | null;
+  tags: string[];
+  trashedAt: string | null;
+  generator: GeneratorState;
+  developer: DeveloperState;
+  planner: PlannerState;
+  sharedToHall: boolean;
+  hallLikes: number;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
+export interface User {
+  email: string;
+  name: string;
+  passwordHash: string;
+  provider: 'email' | 'google' | 'kakao';
+  createdAt: string;
+  verified: boolean;
+}
