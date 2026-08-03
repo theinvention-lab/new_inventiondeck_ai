@@ -16,9 +16,9 @@
 --------------------------------------------------------------------- */
 @theme {
   /* Brand */
-  --color-brand: #03c75a;
-  --color-brand-strong: #02a94c;
-  --color-brand-soft: #e6f9ee;
+  --color-brand: #e4002b;
+  --color-brand-strong: #b8001f;
+  --color-brand-soft: #fde7ea;
 
   /* Canvas & ink */
   --color-canvas: #ffffff;
@@ -31,14 +31,14 @@
   --color-hairline-strong: rgba(0, 0, 0, 0.12);
 
   /* Semantic */
-  --color-danger: #e0343f;
-  --color-danger-soft: #fdecee;
+  --color-danger: #f04438;
+  --color-danger-soft: #fef1f0;
   --color-warning: #f5a524;
   --color-warning-soft: #fef6e6;
   --color-info: #0c43b7;
   --color-info-soft: #eef2fc;
-  --color-success: #03c75a;
-  --color-success-soft: #e6f9ee;
+  --color-success: #16a34a;
+  --color-success-soft: #e6f7ec;
 
   /* Radius */
   --radius-sm: 4px;

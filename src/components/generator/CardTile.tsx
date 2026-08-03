@@ -12,7 +12,7 @@ export function CardTile({ card, selected, onToggle, onOpenDetail }: CardTilePro
   const color = CATEGORY_COLOR[card.category];
   return (
     <div
-      className={`group relative flex h-full flex-col gap-2 rounded-xl border p-3.5 transition-all ${
+      className={`group relative flex h-full flex-col gap-2 rounded-none border p-3.5 transition-all ${
         selected ? 'border-brand bg-brand-soft/50 shadow-sm' : 'border-hairline bg-white hover:border-ink-muted/40 hover:shadow-sm'
       }`}
     >

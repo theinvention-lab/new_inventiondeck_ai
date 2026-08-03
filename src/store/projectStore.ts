@@ -71,8 +71,6 @@ export function createEmptyProject(ownerEmail: string, title: string): Project {
     generator: defaultGenerator(),
     developer: defaultDeveloper(),
     planner: defaultPlanner(),
-    sharedToHall: false,
-    hallLikes: 0,
   };
 }
 
@@ -101,9 +99,6 @@ interface ProjectStoreState {
 
   addTag: (projectId: string, tag: string) => void;
   removeTag: (projectId: string, tag: string) => void;
-
-  toggleHallShare: (projectId: string) => void;
-  likeHallProject: (projectId: string) => void;
 }
 
 export const useProjectStore = create<ProjectStoreState>()(
@@ -202,18 +197,6 @@ export const useProjectStore = create<ProjectStoreState>()(
       removeTag: (projectId, tag) => {
         set((s) => ({
           projects: s.projects.map((p) => (p.id === projectId ? { ...p, tags: p.tags.filter((t) => t !== tag) } : p)),
-        }));
-      },
-
-      toggleHallShare: (projectId) => {
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === projectId ? { ...p, sharedToHall: !p.sharedToHall } : p)),
-        }));
-      },
-
-      likeHallProject: (projectId) => {
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === projectId ? { ...p, hallLikes: p.hallLikes + 1 } : p)),
         }));
       },
     }),

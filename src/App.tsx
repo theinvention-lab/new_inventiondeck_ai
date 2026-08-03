@@ -1,6 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
-import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { SignupPage } from './pages/auth/SignupPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
@@ -9,18 +8,22 @@ import { MyPage } from './pages/mypage/MyPage';
 import { GeneratorPage } from './pages/generator/GeneratorPage';
 import { DeveloperPage } from './pages/developer/DeveloperPage';
 import { PlannerPage } from './pages/planner/PlannerPage';
-import { HallOfFamePage } from './pages/HallOfFamePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { useAuthStore } from './store/authStore';
+
+function RootRedirect() {
+  const currentEmail = useAuthStore((s) => s.currentEmail);
+  return <Navigate to={currentEmail ? '/mypage' : '/login'} replace />;
+}
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/hall" element={<HallOfFamePage />} />
 
       <Route
         path="/mypage"

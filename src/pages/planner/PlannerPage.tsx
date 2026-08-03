@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppHeader } from '../../components/layout/AppHeader';
+import { AppShell } from '../../components/layout/AppShell';
 import { Tabs } from '../../components/ui/Tabs';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -54,9 +54,11 @@ export function PlannerPage() {
 
   if (!project || project.ownerEmail !== currentEmail) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <EmptyState title="프로젝트를 찾을 수 없습니다" action={<Button onClick={() => navigate('/mypage')}>마이페이지로</Button>} />
-      </div>
+      <AppShell>
+        <div className="flex min-h-screen items-center justify-center">
+          <EmptyState title="프로젝트를 찾을 수 없습니다" action={<Button onClick={() => navigate('/mypage')}>마이페이지로</Button>} />
+        </div>
+      </AppShell>
     );
   }
 
@@ -136,9 +138,8 @@ export function PlannerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas-sunken pb-20">
-      <AppHeader project={project} activeStage="planner" />
-
+    <AppShell project={project} activeStage="planner">
+      <div className="pb-20">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -273,6 +274,7 @@ export function PlannerPage() {
       <Dialog open={previewOpen === 'pitch'} onClose={() => setPreviewOpen(null)} size="lg" title="IR Deck 미리보기">
         <PitchDeckPreview slides={planner.pitchSlides} template={template} />
       </Dialog>
-    </div>
+      </div>
+    </AppShell>
   );
 }

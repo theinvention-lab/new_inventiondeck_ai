@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppHeader } from '../../components/layout/AppHeader';
+import { AppShell } from '../../components/layout/AppShell';
 import { Tabs } from '../../components/ui/Tabs';
 import { Textarea } from '../../components/ui/Textarea';
 import { Button } from '../../components/ui/Button';
@@ -72,9 +72,11 @@ export function DeveloperPage() {
 
   if (!project || !dev || project.ownerEmail !== currentEmail) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <EmptyState title="프로젝트를 찾을 수 없습니다" action={<Button onClick={() => navigate('/mypage')}>마이페이지로</Button>} />
-      </div>
+      <AppShell>
+        <div className="flex min-h-screen items-center justify-center">
+          <EmptyState title="프로젝트를 찾을 수 없습니다" action={<Button onClick={() => navigate('/mypage')}>마이페이지로</Button>} />
+        </div>
+      </AppShell>
     );
   }
 
@@ -167,9 +169,8 @@ export function DeveloperPage() {
   }[dev.autosaveStatus];
 
   return (
-    <div className="min-h-screen bg-canvas-sunken pb-20">
-      <AppHeader project={project} activeStage="developer" />
-
+    <AppShell project={project} activeStage="developer">
+      <div className="pb-20">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -278,7 +279,7 @@ export function DeveloperPage() {
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 left-64 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Badge tone="outline">고도화 진행률 {criteriaProgress}%</Badge>
           <Button size="lg" onClick={sendToPlanner}>
@@ -301,6 +302,7 @@ export function DeveloperPage() {
           ))}
         </div>
       </Dialog>
-    </div>
+      </div>
+    </AppShell>
   );
 }

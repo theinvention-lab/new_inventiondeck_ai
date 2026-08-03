@@ -24,13 +24,11 @@ export function ProjectCard({
   draggable,
   onDragStart,
   onDelete,
-  onToggleHall,
 }: {
   project: Project;
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
   onDelete: () => void;
-  onToggleHall: () => void;
 }) {
   const navigate = useNavigate();
   const progress = projectProgress(project);
@@ -76,14 +74,6 @@ export function ProjectCard({
           className="flex-1 rounded-full bg-canvas-sunken py-1.5 text-[12.5px] font-semibold text-ink-muted hover:bg-hairline"
         >
           이어서 작업
-        </button>
-        <button
-          onClick={onToggleHall}
-          className={`rounded-full px-3 py-1.5 text-[12.5px] font-semibold ${
-            project.sharedToHall ? 'bg-brand-soft text-brand-strong' : 'bg-canvas-sunken text-ink-muted hover:bg-hairline'
-          }`}
-        >
-          {project.sharedToHall ? '공유중' : '명예의전당'}
         </button>
         <button onClick={onDelete} className="rounded-full px-3 py-1.5 text-[12.5px] font-semibold text-danger hover:bg-danger-soft">
           삭제

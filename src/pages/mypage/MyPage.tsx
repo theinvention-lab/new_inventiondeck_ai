@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SiteHeader } from '../../components/layout/SiteHeader';
+import { AppShell } from '../../components/layout/AppShell';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Dialog } from '../../components/ui/Dialog';
@@ -31,7 +31,6 @@ export function MyPage() {
   const createFolder = useProjectStore((s) => s.createFolder);
   const deleteFolder = useProjectStore((s) => s.deleteFolder);
   const assignFolder = useProjectStore((s) => s.assignFolder);
-  const toggleHallShare = useProjectStore((s) => s.toggleHallShare);
 
   const [view, setView] = useState<'active' | 'trash'>('active');
   const [activeFolder, setActiveFolder] = useState<string | 'all' | 'unfiled'>('all');
@@ -73,9 +72,7 @@ export function MyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas-sunken">
-      <SiteHeader />
-
+    <AppShell>
       <div className="mx-auto max-w-6xl px-5 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -143,10 +140,6 @@ export function MyPage() {
                         draggable
                         onDragStart={(e) => e.dataTransfer.setData('text/project-id', p.id)}
                         onDelete={() => setConfirmDeleteId(p.id)}
-                        onToggleHall={() => {
-                          toggleHallShare(p.id);
-                          toast.push(p.sharedToHall ? '명예의 전당 공유를 취소했습니다.' : '명예의 전당에 공유했습니다.');
-                        }}
                       />
                     ))}
                   </div>
@@ -230,6 +223,6 @@ export function MyPage() {
           </>
         }
       />
-    </div>
+    </AppShell>
   );
 }

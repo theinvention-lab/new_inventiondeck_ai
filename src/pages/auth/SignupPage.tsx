@@ -119,11 +119,11 @@ export function SignupPage() {
 
         <div className="mt-1 flex flex-col gap-2 rounded-lg bg-canvas-sunken p-3">
           <label className="flex items-center gap-2 text-[13px] text-ink">
-            <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} className="h-4 w-4 accent-[#03c75a]" />
+            <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} className="h-4 w-4 accent-[#e4002b]" />
             (필수) 서비스 이용약관에 동의합니다
           </label>
           <label className="flex items-center gap-2 text-[13px] text-ink">
-            <input type="checkbox" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} className="h-4 w-4 accent-[#03c75a]" />
+            <input type="checkbox" checked={agreePrivacy} onChange={(e) => setAgreePrivacy(e.target.checked)} className="h-4 w-4 accent-[#e4002b]" />
             (필수) 개인정보처리방침에 동의합니다
           </label>
           {errors.terms && <p className="text-[12px] text-danger">{errors.terms}</p>}

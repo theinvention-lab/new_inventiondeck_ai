@@ -11,7 +11,7 @@ export function RecommendedRail({ cards, onAdd }: { cards: BizCard[]; onAdd: (id
       </div>
       <div className="flex gap-2.5 overflow-x-auto pb-1">
         {cards.map((card) => (
-          <div key={card.id} className="flex w-56 shrink-0 flex-col gap-1.5 rounded-lg border border-hairline bg-white p-3">
+          <div key={card.id} className="flex w-56 shrink-0 flex-col gap-1.5 rounded-none border border-hairline bg-white p-3">
             <span className="w-fit rounded-full bg-canvas-sunken px-2 py-0.5 text-[10px] font-bold text-ink-muted">
               {CATEGORY_LABEL[card.category]}
             </span>

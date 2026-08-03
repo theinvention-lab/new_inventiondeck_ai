@@ -3,7 +3,7 @@ import { CATEGORY_COLOR } from '../../data/taxonomy';
 
 export function CardTray({ cards, onRemove }: { cards: BizCard[]; onRemove: (id: string) => void }) {
   return (
-    <div className="sticky top-[calc(4rem+1px)] z-20 border-b border-hairline bg-white/95 px-5 py-3 backdrop-blur">
+    <div className="sticky top-0 z-20 border-b border-hairline bg-white/95 px-5 py-3 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-3">
         <span className="shrink-0 text-[12.5px] font-bold text-ink-muted">
           선택한 카드 <span className="text-brand">{cards.length}</span>

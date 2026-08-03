@@ -151,8 +151,6 @@ export interface Project {
   generator: GeneratorState;
   developer: DeveloperState;
   planner: PlannerState;
-  sharedToHall: boolean;
-  hallLikes: number;
 }
 
 export interface Folder {

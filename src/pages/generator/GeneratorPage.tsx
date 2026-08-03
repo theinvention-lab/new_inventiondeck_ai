@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AppHeader } from '../../components/layout/AppHeader';
+import { AppShell } from '../../components/layout/AppShell';
 import { CardLibrary } from '../../components/generator/CardLibrary';
 import { CardTray } from '../../components/generator/CardTray';
 import { CardDetailDialog } from '../../components/generator/CardDetailDialog';
@@ -50,9 +50,11 @@ export function GeneratorPage() {
 
   if (!project || project.ownerEmail !== currentEmail) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <EmptyState title="프로젝트를 찾을 수 없습니다" action={<Button onClick={() => navigate('/mypage')}>마이페이지로</Button>} />
-      </div>
+      <AppShell>
+        <div className="flex min-h-screen items-center justify-center">
+          <EmptyState title="프로젝트를 찾을 수 없습니다" action={<Button onClick={() => navigate('/mypage')}>마이페이지로</Button>} />
+        </div>
+      </AppShell>
     );
   }
 
@@ -166,8 +168,8 @@ export function GeneratorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas-sunken pb-24">
-      <AppHeader project={project} activeStage="generator" />
+    <AppShell project={project} activeStage="generator">
+      <div className="pb-24">
       <CardTray cards={selectedCards} onRemove={removeCard} />
 
       <div className="mx-auto max-w-6xl px-5 py-6">
@@ -307,7 +309,7 @@ export function GeneratorPage() {
         )}
 
         {step === 'select' && (
-          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur">
+          <div className="fixed inset-x-0 bottom-0 left-64 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center justify-between">
               <p className="text-[13px] text-ink-muted">
                 {canGenerate ? `${gen.selectedCardIds.length}개 카드로 아이디어를 생성할 수 있어요` : '카드를 2개 이상 선택해주세요'}
@@ -326,6 +328,7 @@ export function GeneratorPage() {
         onClose={() => setDetailCard(null)}
         onToggle={() => detailCard && toggleCard(detailCard.id)}
       />
-    </div>
+      </div>
+    </AppShell>
   );
 }
