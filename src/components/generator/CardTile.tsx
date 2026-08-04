@@ -33,14 +33,7 @@ export function CardTile({ card, selected, onToggle, onOpenDetail }: CardTilePro
         <h3 className="text-[13.5px] font-bold leading-snug text-ink-strong line-clamp-2">{card.title}</h3>
         <p className="mt-1 text-[12px] leading-relaxed text-ink-muted line-clamp-2">{card.description}</p>
       </button>
-      <div className="mt-auto flex items-center justify-between pt-1.5">
-        <div className="flex flex-wrap gap-1">
-          {card.tags.slice(0, 2).map((t) => (
-            <span key={t} className="rounded-full bg-canvas-sunken px-1.5 py-0.5 text-[10px] text-ink-faint">
-              #{t}
-            </span>
-          ))}
-        </div>
+      <div className="mt-auto flex items-center justify-end pt-1.5">
         <button
           onClick={onToggle}
           className={`shrink-0 rounded-full px-2.5 py-1 text-[11.5px] font-semibold transition-colors ${

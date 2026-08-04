@@ -5,7 +5,6 @@ import { ChatModeButtons } from '../../components/home/ChatModeButtons';
 import { HomeChatPanel } from '../../components/home/HomeChatPanel';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
-import { useNoteStore } from '../../store/noteStore';
 import type { ChatMessage, Project } from '../../types';
 import type { ChatMode } from '../../ai/homeChatEngine';
 import { openingMessage, replyFor } from '../../ai/homeChatEngine';
@@ -27,8 +26,6 @@ export function HomePage() {
   const createProject = useProjectStore((s) => s.createProject);
   const updateGenerator = useProjectStore((s) => s.updateGenerator);
   const updateBuilder = useProjectStore((s) => s.updateBuilder);
-
-  const notes = useNoteStore((s) => s.notes);
 
   const paramMode = searchParams.get('mode');
   const [mode, setMode] = useState<ChatMode>(isChatMode(paramMode) ? paramMode : 'generator');
@@ -65,22 +62,6 @@ export function HomePage() {
       setThinking(false);
     }, 700 + Math.random() * 400);
   };
-
-  // A note sent from the right-sidebar "내 메모" panel arrives as ?noteId=,
-  // gets dropped into the Generator chat once, then the param is cleared.
-  useEffect(() => {
-    const noteId = searchParams.get('noteId');
-    if (!noteId) return;
-    const note = notes.find((n) => n.id === noteId);
-    if (note) {
-      setMode('generator');
-      sendChat('generator', note.content.trim() || note.title);
-    }
-    const next = new URLSearchParams(searchParams);
-    next.delete('noteId');
-    setSearchParams(next, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, notes]);
 
   const resumeOrCreateProject = (): Project => {
     const active = projects

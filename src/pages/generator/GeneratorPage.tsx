@@ -215,7 +215,7 @@ export function GeneratorPage() {
                 return (
                   <div
                     key={idea.id}
-                    className={`flex flex-col gap-3 rounded-xl bg-white p-5 ${adopted ? 'border-2' : 'border'}`}
+                    className={`flex flex-col gap-3 rounded-none bg-white p-5 ${adopted ? 'border-2' : 'border'}`}
                     style={{ borderColor: accent }}
                   >
                     <div className="flex items-center justify-between">

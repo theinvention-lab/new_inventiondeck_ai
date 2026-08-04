@@ -10,7 +10,6 @@ import { useAuthStore } from '../../store/authStore';
 import { useProjectStore, TRASH_RETENTION_DAYS } from '../../store/projectStore';
 import { useNoteStore } from '../../store/noteStore';
 import { useToast } from '../ui/Toast';
-import type { Note } from '../../types';
 
 const PANEL_TOP: Record<'projects' | 'notes', number> = {
   projects: 24,
@@ -134,11 +133,6 @@ export function RightSidebar() {
     createNote(email, title, content);
     toast.push('메모를 저장했어요.');
     setCreatingNote(false);
-  };
-
-  const sendNoteToGenerator = (note: Note) => {
-    setOpenPanel(null);
-    navigate(`/home?mode=generator&noteId=${note.id}`);
   };
 
   const closeNotesPanel = () => {
@@ -277,12 +271,6 @@ export function RightSidebar() {
                       </button>
                     </div>
                     {n.content && <p className="line-clamp-2 text-[12px] leading-relaxed text-ink-muted">{n.content}</p>}
-                    <button
-                      onClick={() => sendNoteToGenerator(n)}
-                      className="mt-1 w-fit rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand-strong hover:bg-brand-soft/70"
-                    >
-                      ✨ Generator로 보내기
-                    </button>
                   </div>
                 ))}
               </div>
