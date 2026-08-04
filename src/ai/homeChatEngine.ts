@@ -15,7 +15,7 @@ interface ModeCopy {
 export const MODE_COPY: Record<ChatMode, ModeCopy> = {
   generator: {
     label: 'Generator',
-    icon: '✨',
+    icon: 'fi-rr-apps',
     accent: '#e4002b',
     subtitle: '카드를 조합해서 AI가 비즈니스 아이디어를 만들어드려요',
     placeholder: '관심 있는 분야나 풀고 싶은 문제를 자유롭게 적어보세요…',
@@ -23,7 +23,7 @@ export const MODE_COPY: Record<ChatMode, ModeCopy> = {
   },
   builder: {
     label: 'Builder',
-    icon: '🧩',
+    icon: 'fi-rr-edit',
     accent: '#0c43b7',
     subtitle: '템플릿을 기반으로 아이디어를 구체화해요',
     placeholder: '구체화하고 싶은 아이디어를 한 문장으로 요약해보세요…',
@@ -31,7 +31,7 @@ export const MODE_COPY: Record<ChatMode, ModeCopy> = {
   },
   planner: {
     label: 'Planner',
-    icon: '📄',
+    icon: 'fi-rr-document',
     accent: '#16a34a',
     subtitle: '사업계획서와 IR Deck을 작성해요',
     placeholder: '사업계획서에 담고 싶은 핵심 내용을 적어보세요…',

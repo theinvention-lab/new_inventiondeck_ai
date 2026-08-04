@@ -29,7 +29,7 @@ export function ChatModeButtons({ active, onSelect }: { active: ChatMode; onSele
                 isActive ? 'text-white' : 'text-ink-muted hover:text-ink-strong'
               }`}
             >
-              <span>{copy.icon}</span>
+              <i className={`fi ${copy.icon}`} />
               {copy.label}
             </button>
           );

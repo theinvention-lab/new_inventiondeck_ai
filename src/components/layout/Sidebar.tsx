@@ -8,11 +8,11 @@ export const SIDEBAR_WIDTH_EXPANDED = 'w-64';
 export const SIDEBAR_WIDTH_COLLAPSED = 'w-[88px]';
 
 const NAV_ITEMS = [
-  { to: '/home', icon: '🏠', label: '홈', match: (path: string, search: string) => path === '/' || (path === '/home' && !search.includes('mode=')) },
-  { to: '/home?mode=generator', icon: '✨', label: 'Generator', match: (path: string, search: string) => path.includes('/generator') || (path === '/home' && search.includes('mode=generator')) },
-  { to: '/home?mode=builder', icon: '🧩', label: 'Builder', match: (path: string, search: string) => path.includes('/builder') || (path === '/home' && search.includes('mode=builder')) },
-  { to: '/home?mode=planner', icon: '📄', label: 'Planner', match: (path: string, search: string) => path.includes('/planner') || (path === '/home' && search.includes('mode=planner')) },
-  { to: '/mypage', icon: '👤', label: '마이페이지', match: (path: string) => path.startsWith('/mypage') },
+  { to: '/home', icon: 'fi-rr-home', label: '홈', match: (path: string, search: string) => path === '/' || (path === '/home' && !search.includes('mode=')) },
+  { to: '/home?mode=generator', icon: 'fi-rr-apps', label: 'Generator', match: (path: string, search: string) => path.includes('/generator') || (path === '/home' && search.includes('mode=generator')) },
+  { to: '/home?mode=builder', icon: 'fi-rr-edit', label: 'Builder', match: (path: string, search: string) => path.includes('/builder') || (path === '/home' && search.includes('mode=builder')) },
+  { to: '/home?mode=planner', icon: 'fi-rr-document', label: 'Planner', match: (path: string, search: string) => path.includes('/planner') || (path === '/home' && search.includes('mode=planner')) },
+  { to: '/mypage', icon: 'fi-rr-user', label: '마이페이지', match: (path: string) => path.startsWith('/mypage') },
 ];
 
 export function Sidebar() {
@@ -50,7 +50,7 @@ export function Sidebar() {
                 : 'text-ink-muted hover:bg-canvas-sunken'
             }`}
           >
-            <span className="text-[16px]">{item.icon}</span>
+            <i className={`fi ${item.icon} text-[16px]`} />
             <span className={collapsed ? 'whitespace-nowrap text-[10.5px] font-semibold leading-none' : ''}>{item.label}</span>
           </Link>
         ))}

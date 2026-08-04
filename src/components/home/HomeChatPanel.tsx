@@ -43,7 +43,7 @@ export function HomeChatPanel({
             className="flex h-8 w-8 items-center justify-center rounded-lg text-[15px]"
             style={{ backgroundColor: `${copy.accent}1a`, color: copy.accent }}
           >
-            {copy.icon}
+            <i className={`fi ${copy.icon}`} />
           </span>
           <div className="min-w-0">
             <p className="truncate text-[12.5px] text-ink-muted">{copy.subtitle}</p>

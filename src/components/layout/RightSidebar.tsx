@@ -156,7 +156,7 @@ export function RightSidebar() {
             openPanel === 'projects' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
           }`}
         >
-          <span className="text-[17px]">📁</span>
+          <i className="fi fi-rr-layers text-[17px]" />
           <span className="text-[10.5px] font-semibold leading-none whitespace-nowrap">프로젝트</span>
         </button>
         <button
@@ -166,7 +166,7 @@ export function RightSidebar() {
             openPanel === 'notes' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
           }`}
         >
-          <span className="text-[17px]">📝</span>
+          <i className="fi fi-rr-paper-plane text-[17px]" />
           <span className="text-[10.5px] font-semibold leading-none whitespace-nowrap">메모</span>
         </button>
       </aside>
