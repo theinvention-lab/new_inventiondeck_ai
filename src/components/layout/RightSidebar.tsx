@@ -22,12 +22,14 @@ function SlidePanel({
   onClose,
   title,
   topOffset,
+  headerAction,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   topOffset: number;
+  headerAction?: ReactNode;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -52,9 +54,12 @@ function SlidePanel({
       >
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
           <h2 className="text-[14px] font-bold text-ink-strong">{title}</h2>
-          <button onClick={onClose} aria-label="닫기" className="text-ink-faint hover:text-ink-strong">
-            ✕
-          </button>
+          <div className="flex items-center gap-3">
+            {headerAction}
+            <button onClick={onClose} aria-label="닫기" className="text-ink-faint hover:text-ink-strong">
+              ✕
+            </button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-4">{children}</div>
       </div>
@@ -207,7 +212,19 @@ export function RightSidebar() {
         )}
       </SlidePanel>
 
-      <SlidePanel open={openPanel === 'notes'} onClose={closeNotesPanel} title="내 메모" topOffset={PANEL_TOP.notes}>
+      <SlidePanel
+        open={openPanel === 'notes'}
+        onClose={closeNotesPanel}
+        title="내 메모"
+        topOffset={PANEL_TOP.notes}
+        headerAction={
+          !creatingNote && (
+            <button onClick={openNewNoteForm} className="text-[12.5px] font-semibold text-brand hover:text-brand-strong">
+              + 새 메모
+            </button>
+          )
+        }
+      >
         {creatingNote ? (
           <div className="flex flex-col gap-3">
             <Input
@@ -237,11 +254,6 @@ export function RightSidebar() {
           </div>
         ) : (
           <>
-            <div className="mb-4 flex justify-end">
-              <Button size="sm" onClick={openNewNoteForm}>
-                + 새 메모
-              </Button>
-            </div>
             {myNotes.length === 0 ? (
               <button
                 onClick={openNewNoteForm}

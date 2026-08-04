@@ -29,6 +29,9 @@ interface AuthStoreState {
   resetPassword: (token: string, newPassword: string) => AuthResult;
   isEmailTaken: (email: string) => boolean;
   currentUser: () => User | null;
+  updateProfile: (patch: Partial<Pick<User, 'name' | 'avatarDataUrl' | 'interest'>>) => void;
+  changePassword: (currentPassword: string, newPassword: string) => AuthResult;
+  setMarketingConsent: (value: boolean) => void;
 }
 
 const LOCK_THRESHOLD = 5;
@@ -59,6 +62,9 @@ export const useAuthStore = create<AuthStoreState>()(
           provider: 'email',
           createdAt: new Date().toISOString(),
           verified: true,
+          avatarDataUrl: null,
+          interest: '',
+          marketingConsent: false,
         };
         set((s) => ({ users: [...s.users, user], currentEmail: normalized }));
         return { ok: true };
@@ -104,6 +110,9 @@ export const useAuthStore = create<AuthStoreState>()(
             provider,
             createdAt: new Date().toISOString(),
             verified: true,
+            avatarDataUrl: null,
+            interest: '',
+            marketingConsent: false,
           };
           set((s) => ({ users: [...s.users, user!] }));
         }
@@ -140,6 +149,32 @@ export const useAuthStore = create<AuthStoreState>()(
         const email = get().currentEmail;
         if (!email) return null;
         return get().users.find((u) => u.email === email) ?? null;
+      },
+
+      updateProfile: (patch) => {
+        const email = get().currentEmail;
+        if (!email) return;
+        set((s) => ({ users: s.users.map((u) => (u.email === email ? { ...u, ...patch } : u)) }));
+      },
+
+      changePassword: (currentPassword, newPassword) => {
+        const email = get().currentEmail;
+        if (!email) return { ok: false, error: '로그인이 필요합니다.' };
+        const user = get().users.find((u) => u.email === email);
+        if (!user || user.passwordHash !== mockHash(currentPassword)) {
+          return { ok: false, error: '현재 비밀번호가 일치하지 않습니다.' };
+        }
+        if (newPassword.length < 8) {
+          return { ok: false, error: '새 비밀번호는 8자 이상이어야 합니다.' };
+        }
+        set((s) => ({ users: s.users.map((u) => (u.email === email ? { ...u, passwordHash: mockHash(newPassword) } : u)) }));
+        return { ok: true };
+      },
+
+      setMarketingConsent: (value) => {
+        const email = get().currentEmail;
+        if (!email) return;
+        set((s) => ({ users: s.users.map((u) => (u.email === email ? { ...u, marketingConsent: value } : u)) }));
       },
     }),
     {

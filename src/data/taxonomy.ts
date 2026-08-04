@@ -1,42 +1,35 @@
 import type { CardCategory } from '../types';
 
 export const CATEGORY_LABEL: Record<CardCategory, string> = {
-  industry: '산업',
-  customer: '고객 유형',
-  problem: '문제 영역',
-  businessModel: '비즈니스 모델',
+  theme: '산업',
+  tech: '기술',
   revenue: '수익 모델',
-  technology: '기술 · 트렌드',
+  trend: '트렌드',
+  segment: '고객 세그먼트',
+  feature: '비즈니스 피쳐',
 };
 
 export const CATEGORY_COLOR: Record<CardCategory, string> = {
-  industry: '#0c43b7',
-  customer: '#03c75a',
-  problem: '#e0343f',
-  businessModel: '#7c3aed',
+  theme: '#0c43b7',
+  tech: '#0891b2',
   revenue: '#f5a524',
-  technology: '#0891b2',
+  trend: '#7c3aed',
+  segment: '#03c75a',
+  feature: '#e0343f',
 };
 
 export const CATEGORY_ICON: Record<CardCategory, string> = {
-  industry: '🏢',
-  customer: '👥',
-  problem: '❗',
-  businessModel: '💼',
+  theme: '🏢',
+  tech: '⚙️',
   revenue: '📈',
-  technology: '⚙️',
+  trend: '📊',
+  segment: '👥',
+  feature: '🧩',
 };
 
-export const CATEGORY_ORDER: CardCategory[] = [
-  'industry',
-  'customer',
-  'problem',
-  'businessModel',
-  'revenue',
-  'technology',
-];
+export const CATEGORY_ORDER: CardCategory[] = ['theme', 'tech', 'revenue', 'trend', 'segment', 'feature'];
 
-export const INDUSTRY_CORE = [
+export const THEME_CORE = [
   '헬스케어', '핀테크', '에듀테크', '푸드테크', '모빌리티', '프롭테크', '리테일', '패션 · 뷰티',
   '반려동물', '여행 · 숙박', '농업 · 애그테크', '물류 · 유통', '콘텐츠 · 미디어', '게임', '스포츠 · 피트니스',
   '뷰티 · 웰니스', '법률 서비스', '인사 · 채용', '보험', '제조업', '건설 · 인테리어', '에너지 · 친환경',
@@ -45,28 +38,12 @@ export const INDUSTRY_CORE = [
   '동물병원 · 수의', '스마트홈', '항공 · 우주', '해양 · 수산업',
 ];
 
-export const CUSTOMER_CORE = [
+export const SEGMENT_CORE = [
   '1인 가구', 'MZ세대 직장인', '워킹맘 · 워킹대디', '시니어(고령층)', '중소기업 대표', '프리랜서',
   '대학생', '초중고 학부모', '반려동물 보호자', '1인 창업가', '외국인 거주자', 'Z세대 대학생',
   '재택근무자', '소상공인', '스타트업 팀', '만성질환자', '신혼부부', '예비 부모', '취업준비생',
   '은퇴 예정자', '지방 거주 주민', '해외 직구족', '취미 크리에이터', '반려식물 애호가',
   '헬스 · 운동 마니아', 'B2B 구매담당자', '영세 자영업자', '디지털 노마드', '다문화 가정', '장애인 및 보호자',
-];
-
-export const PROBLEM_CORE = [
-  '정보 비대칭', '시간 부족', '높은 초기 비용', '복잡한 행정 절차', '신뢰할 수 있는 정보 부족',
-  '개인화 부족', '접근성 제한', '낮은 디지털 리터러시', '단절된 커뮤니티', '재고 · 자원 낭비',
-  '느린 의사결정', '데이터 파편화', '반복 업무 부담', '전문 인력 부족', '높은 이직률',
-  '불투명한 가격 정책', '낮은 재구매율', '고객 응대 병목', '느린 배송 · 물류', '낮은 재무 이해도',
-  '건강관리 습관 부재', '환경 부담 증가', '규제 대응 어려움', '커뮤니케이션 단절', '낮은 브랜드 신뢰도',
-];
-
-export const BUSINESS_MODEL_CORE = [
-  '구독형 서비스', '마켓플레이스', 'D2C 브랜드', 'SaaS', '온디맨드 서비스', 'B2B2C 플랫폼',
-  '커뮤니티 기반 플랫폼', '프리미엄(Freemium)', '라이선싱', '프랜차이즈', '크라우드소싱',
-  '공유경제 플랫폼', '큐레이션 커머스', '버티컬 커머스', 'AI 에이전트 서비스', '데이터 플랫폼',
-  '라스트마일 서비스', '옴니채널 리테일', '화이트라벨 솔루션', '임베디드 금융', '오프라인 체험형 매장',
-  '리퍼브 · 리커머스', '멤버십 클럽', '에이전시 · 대행 서비스', '교육 콘텐츠 플랫폼',
 ];
 
 export const REVENUE_CORE = [
@@ -83,6 +60,22 @@ export const TECH_CORE = [
   '3D 프린팅', '로보틱스', '개인정보 보호 기술', '검색 · 매칭 엔진', '실시간 협업 도구',
 ];
 
+export const TREND_CORE = [
+  '구독경제 확산', '1인 가구 증가', '친환경 소비 확산', '홈코노미 성장', '숏폼 콘텐츠 소비',
+  '하이퍼로컬 소비', '리퍼브 · 리커머스 확산', '웰니스 관심 증가', '고령화 사회 심화', 'MZ세대 소비력 확대',
+  '원격근무 정착', '생성형 AI 대중화', '구독 피로 현상', '가성비 소비 회귀', '펫코노미 성장',
+  '1인 크리에이터 경제', '로컬 브랜드 선호', '제로웨이스트 트렌드', '디지털 디톡스 관심', '취향 소비 확산',
+  '리셀 시장 성장', '안전 · 건강 중시', 'AI 동반자 서비스 확산', '노동력 부족 심화', '글로벌 직구 증가',
+];
+
+export const FEATURE_CORE = [
+  '실시간 매칭', 'AI 추천', '커뮤니티 기능', '리뷰 · 평점 시스템', '구독 관리', '푸시 알림',
+  '위치 기반 추천', '챗봇 상담', '포인트 · 리워드', '소셜 로그인', '간편결제 연동', '다국어 지원',
+  '오프라인 모드', '데이터 대시보드', '자동 알림 발송', '맞춤 큐레이션', '화상 상담', '예약 · 스케줄링',
+  '파일 공유', '협업 워크스페이스', '음성 명령', 'QR 코드 스캔', '실시간 채팅', '구독 해지 방어 캠페인',
+  '온보딩 튜토리얼',
+];
+
 export const MODIFIERS = [
   '초기 진입', '프리미엄', '지역 특화', '구독 기반', '커뮤니티 연계', '데이터 기반', 'AI 결합',
   '옴니채널', 'B2B 전환', '글로벌 확장형', '친환경', '맞춤형', '온디맨드', '체험형',
@@ -91,25 +84,25 @@ export const MODIFIERS = [
 ];
 
 export const CARD_DESCRIPTION_TEMPLATE: Record<CardCategory, (core: string, mod: string) => string> = {
-  industry: (core, mod) =>
+  theme: (core, mod) =>
     `${mod} 접근으로 ${core} 산업의 공급-수요 구조를 재구성하는 영역입니다. 기존 플레이어 대비 좁은 세그먼트에서 밀도 있는 경험을 제공할 여지가 있습니다.`,
-  customer: (core, mod) =>
+  segment: (core, mod) =>
     `${mod} 서비스를 기대하는 ${core} 세그먼트입니다. 이들의 반복되는 불편함과 지불 의사를 함께 고려해 아이디어의 출발점으로 삼을 수 있습니다.`,
-  problem: (core, mod) =>
-    `${mod} 방식으로 ${core} 문제를 해결하려는 시도가 늘고 있습니다. 문제의 발생 빈도와 심각도를 검증하면 아이디어의 설득력이 높아집니다.`,
-  businessModel: (core, mod) =>
-    `${mod} 요소를 결합한 ${core} 구조입니다. 초기 유동성 확보 방식과 공급자·수요자 균형을 함께 설계해야 합니다.`,
   revenue: (core, mod) =>
     `${mod} 전략과 맞물린 ${core} 방식입니다. 단가, 전환율, 이탈률 가정을 구체적으로 세워야 현실성 있는 매출 모델이 됩니다.`,
-  technology: (core, mod) =>
+  tech: (core, mod) =>
     `${mod} 시나리오에 ${core}를 적용해 기존 프로세스를 단축하거나 새로운 경험을 만드는 기술 조합입니다.`,
+  trend: (core, mod) =>
+    `${mod} 흐름 속에서 ${core} 트렌드가 확산되고 있습니다. 이 변화에 맞춰 제품 · 서비스를 조정하면 초기 수요를 선점할 수 있습니다.`,
+  feature: (core, mod) =>
+    `${mod} 방식으로 구현하는 ${core} 기능입니다. 사용자의 핵심 반복 행동을 줄여주는지, 차별적 경험을 만드는지 검증해야 합니다.`,
 };
 
 export const CARD_EXAMPLE_TEMPLATE: Record<CardCategory, (core: string, mod: string) => string> = {
-  industry: (core, mod) => `예: ${mod} 전략을 쓰는 ${core} 스타트업이 특정 지역·연령대에서 빠르게 초기 고객을 확보한 사례`,
-  customer: (core, mod) => `예: ${core}를 대상으로 ${mod} 온보딩을 제공해 첫 결제 전환율을 높인 사례`,
-  problem: (core, mod) => `예: ${core}로 인해 발생하는 이탈을 ${mod} 방식으로 완화한 사례`,
-  businessModel: (core, mod) => `예: ${core}에 ${mod} 옵션을 더해 객단가를 높인 사례`,
+  theme: (core, mod) => `예: ${mod} 전략을 쓰는 ${core} 스타트업이 특정 지역·연령대에서 빠르게 초기 고객을 확보한 사례`,
+  segment: (core, mod) => `예: ${core}를 대상으로 ${mod} 온보딩을 제공해 첫 결제 전환율을 높인 사례`,
   revenue: (core, mod) => `예: ${core} 구조에 ${mod} 프로모션을 결합해 초기 매출을 만든 사례`,
-  technology: (core, mod) => `예: ${core} 기술을 ${mod} 흐름에 적용해 운영 효율을 높인 사례`,
+  tech: (core, mod) => `예: ${core} 기술을 ${mod} 흐름에 적용해 운영 효율을 높인 사례`,
+  trend: (core, mod) => `예: ${mod} 흐름을 타고 ${core} 트렌드를 빠르게 반영해 초기 사용자를 확보한 사례`,
+  feature: (core, mod) => `예: ${core} 기능에 ${mod} 요소를 더해 사용자 만족도를 높인 사례`,
 };

@@ -1,9 +1,9 @@
 import type { BizCard, CardCategory } from '../types';
 import {
-  INDUSTRY_CORE,
-  CUSTOMER_CORE,
-  PROBLEM_CORE,
-  BUSINESS_MODEL_CORE,
+  THEME_CORE,
+  SEGMENT_CORE,
+  TREND_CORE,
+  FEATURE_CORE,
   REVENUE_CORE,
   TECH_CORE,
   MODIFIERS,
@@ -18,12 +18,12 @@ function seededRandom(seed: number): number {
 }
 
 const CATEGORY_CORE: Record<CardCategory, string[]> = {
-  industry: INDUSTRY_CORE,
-  customer: CUSTOMER_CORE,
-  problem: PROBLEM_CORE,
-  businessModel: BUSINESS_MODEL_CORE,
+  theme: THEME_CORE,
+  segment: SEGMENT_CORE,
+  trend: TREND_CORE,
+  feature: FEATURE_CORE,
   revenue: REVENUE_CORE,
-  technology: TECH_CORE,
+  tech: TECH_CORE,
 };
 
 function buildCategory(category: CardCategory): BizCard[] {

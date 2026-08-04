@@ -8,6 +8,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Tabs } from '../../components/ui/Tabs';
 import { ProjectCard } from '../../components/mypage/ProjectCard';
 import { FolderSidebar } from '../../components/mypage/FolderSidebar';
+import { ProfileSection } from '../../components/mypage/ProfileSection';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore, TRASH_RETENTION_DAYS } from '../../store/projectStore';
 import { useToast } from '../../components/ui/Toast';
@@ -32,6 +33,7 @@ export function MyPage() {
   const deleteFolder = useProjectStore((s) => s.deleteFolder);
   const assignFolder = useProjectStore((s) => s.assignFolder);
 
+  const [section, setSection] = useState<'profile' | 'projects'>('profile');
   const [view, setView] = useState<'active' | 'trash'>('active');
   const [activeFolder, setActiveFolder] = useState<string | 'all' | 'unfiled'>('all');
   const [query, setQuery] = useState('');
@@ -71,28 +73,44 @@ export function MyPage() {
     navigate(`/project/${project.id}/generator`);
   };
 
+  if (!currentUser) return null;
+
   return (
     <AppShell>
       <div className="mx-auto max-w-6xl px-5 py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-[21px] font-bold text-ink-strong">마이페이지</h1>
-            <p className="mt-1 text-[13px] text-ink-muted">{currentUser?.name}님, 진행 중인 프로젝트를 관리하세요.</p>
+            <p className="mt-1 text-[13px] text-ink-muted">{currentUser.name}님, 프로필과 프로젝트를 관리하세요.</p>
           </div>
-          <Button onClick={() => setNewProjectOpen(true)}>+ 새 프로젝트</Button>
+          {section === 'projects' && <Button onClick={() => setNewProjectOpen(true)}>+ 새 프로젝트</Button>}
         </div>
 
         <Tabs
           items={[
-            { id: 'active', label: '내 프로젝트', badge: active.length },
-            { id: 'trash', label: '휴지통', badge: trashed.length },
+            { id: 'profile', label: '프로필' },
+            { id: 'projects', label: '내 프로젝트', badge: active.length },
           ]}
-          activeId={view}
-          onChange={(id) => setView(id as 'active' | 'trash')}
-          className="mb-5 border-b border-hairline"
+          activeId={section}
+          onChange={(id) => setSection(id as 'profile' | 'projects')}
+          className="mb-6 border-b border-hairline"
         />
 
-        {view === 'active' ? (
+        {section === 'profile' ? (
+          <ProfileSection user={currentUser} />
+        ) : (
+          <>
+            <Tabs
+              items={[
+                { id: 'active', label: '리스트', badge: active.length },
+                { id: 'trash', label: '휴지통', badge: trashed.length },
+              ]}
+              activeId={view}
+              onChange={(id) => setView(id as 'active' | 'trash')}
+              className="mb-5"
+            />
+
+            {view === 'active' ? (
           <div className="flex flex-col gap-5 sm:flex-row">
             <FolderSidebar
               folders={folders}
@@ -180,6 +198,8 @@ export function MyPage() {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
 

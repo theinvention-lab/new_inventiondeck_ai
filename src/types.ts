@@ -3,12 +3,12 @@
 // ---------------------------------------------------------------------------
 
 export type CardCategory =
-  | 'industry'
-  | 'customer'
-  | 'problem'
-  | 'businessModel'
+  | 'theme'
+  | 'tech'
   | 'revenue'
-  | 'technology';
+  | 'trend'
+  | 'segment'
+  | 'feature';
 
 export interface BizCard {
   id: string;
@@ -188,4 +188,7 @@ export interface User {
   provider: 'email' | 'google' | 'kakao';
   createdAt: string;
   verified: boolean;
+  avatarDataUrl: string | null;
+  interest: string;
+  marketingConsent: boolean;
 }

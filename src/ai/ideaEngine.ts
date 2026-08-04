@@ -48,12 +48,12 @@ export function generateIdeas(input: IdeaGenerationInput): IdeaDraft[] {
   const count = input.count ?? 3;
   const seedOffset = input.seedOffset ?? 0;
 
-  const industries = byCategory(selectedCards, 'industry');
-  const customers = byCategory(selectedCards, 'customer');
-  const problems = byCategory(selectedCards, 'problem');
-  const models = byCategory(selectedCards, 'businessModel');
+  const industries = byCategory(selectedCards, 'theme');
+  const customers = byCategory(selectedCards, 'segment');
+  const features = byCategory(selectedCards, 'feature');
+  const trends = byCategory(selectedCards, 'trend');
   const revenues = byCategory(selectedCards, 'revenue');
-  const techs = byCategory(selectedCards, 'technology');
+  const techs = byCategory(selectedCards, 'tech');
 
   const ideas: IdeaDraft[] = [];
 
@@ -62,14 +62,14 @@ export function generateIdeas(input: IdeaGenerationInput): IdeaDraft[] {
 
     const industryCard = pick(industries, seed + 1);
     const customerCard = pick(customers, seed + 2);
-    const problemCard = pick(problems, seed + 3);
-    const modelCard = pick(models, seed + 4);
+    const featureCard = pick(features, seed + 4);
     const revenueCard = pick(revenues, seed + 5);
     const techCard = pick(techs, seed + 6);
+    const trendCard = pick(trends, seed + 12);
 
     const customerLabel = customerCard?.title ?? (interest ? `${interest}에 관심 있는 사용자` : pick(GENERIC_CUSTOMER, seed + 7)!);
-    const problemLabel = problemCard?.title ?? (problemFocus || pick(GENERIC_PROBLEM, seed + 8)!);
-    const modelLabel = modelCard?.title ?? pick(GENERIC_MODEL, seed + 9)!;
+    const problemLabel = problemFocus || pick(GENERIC_PROBLEM, seed + 8)!;
+    const modelLabel = featureCard?.title ?? pick(GENERIC_MODEL, seed + 9)!;
     const industryLabel = industryCard?.title ?? (interest || '신규 영역');
     const revenueLabel = revenueCard?.title ?? '월 구독료';
     const techLabel = techCard?.title;
@@ -81,9 +81,12 @@ export function generateIdeas(input: IdeaGenerationInput): IdeaDraft[] {
 
     const oneLiner = `${customerLabel}을(를) 위한 ${modelLabel} — ${problemLabel} 문제를 해결합니다.`;
 
-    const solutionText = techLabel
+    let solutionText = techLabel
       ? `${techLabel} 기술을 결합한 ${modelLabel} 구조로 ${problemLabel}을(를) 완화합니다. ${opener} ${valuePhrase}.`
       : `${modelLabel} 구조로 ${problemLabel}을(를) 완화합니다. ${opener} ${valuePhrase}.`;
+    if (trendCard) {
+      solutionText += ` 최근 '${trendCard.title}' 흐름과 맞물려 초기 확산 속도를 높일 수 있습니다.`;
+    }
 
     const sections: IdeaSection[] = [
       { id: makeId('sec'), title: '타겟 고객', content: `${customerLabel}. ${interest ? `특히 '${interest}' 영역에서 반복적으로 이 문제를 겪는 사람들을 우선 타겟으로 합니다.` : '초기에는 좁고 뾰족한 세그먼트부터 검증하는 것을 권장합니다.'}` },
