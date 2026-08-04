@@ -1,10 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BizCard, CardCategory } from '../../types';
 import { useCardStore } from '../../store/cardStore';
 import { CATEGORY_LABEL, CATEGORY_ORDER } from '../../data/taxonomy';
 import { CardTile } from './CardTile';
 import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
 
 const PAGE_SIZE = 30;
 
@@ -20,6 +19,7 @@ export function CardLibrary({
   const [category, setCategory] = useState<CardCategory | 'all'>('all');
   const [query, setQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const allCards = useCardStore((s) => s.cards);
 
@@ -49,6 +49,21 @@ export function CardLibrary({
   }, [allCards, category, query]);
 
   const visible = filtered.slice(0, visibleCount);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || visibleCount >= filtered.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((v) => Math.min(v + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: '600px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filtered.length, visibleCount]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -97,25 +112,24 @@ export function CardLibrary({
           조건에 맞는 카드가 없습니다. 검색어나 카테고리를 조정해보세요.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((card) => (
-            <CardTile
-              key={card.id}
-              card={card}
-              selected={selectedIds.includes(card.id)}
-              onToggle={() => onToggle(card.id)}
-              onOpenDetail={() => onOpenDetail(card)}
-            />
-          ))}
-        </div>
-      )}
-
-      {visibleCount < filtered.length && (
-        <div className="flex justify-center pt-2">
-          <Button variant="outline" onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}>
-            더 보기 ({filtered.length - visibleCount}장 남음)
-          </Button>
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((card) => (
+              <CardTile
+                key={card.id}
+                card={card}
+                selected={selectedIds.includes(card.id)}
+                onToggle={() => onToggle(card.id)}
+                onOpenDetail={() => onOpenDetail(card)}
+              />
+            ))}
+          </div>
+          {visibleCount < filtered.length ? (
+            <div ref={sentinelRef} className="h-10" />
+          ) : (
+            <p className="pt-2 text-center text-[12px] text-ink-faint">모든 카드를 확인했어요.</p>
+          )}
+        </>
       )}
     </div>
   );

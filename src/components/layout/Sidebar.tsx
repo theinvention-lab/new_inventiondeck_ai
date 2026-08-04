@@ -1,10 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Logo } from './Logo';
 import logoUrl from '../../assets/logo.webp';
 import { useAuthStore } from '../../store/authStore';
-import { useUiStore } from '../../store/uiStore';
 
-export const SIDEBAR_WIDTH_EXPANDED = 'w-64';
 export const SIDEBAR_WIDTH_COLLAPSED = 'w-[88px]';
 
 const NAV_ITEMS = [
@@ -18,65 +15,41 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const location = useLocation();
   const currentUser = useAuthStore((s) => s.currentUser());
-  const collapsed = useUiStore((s) => s.sidebarCollapsed);
-  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
 
   return (
-    <aside
-      className={`sticky top-0 relative flex h-screen ${collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED} shrink-0 flex-col border-r border-hairline bg-white transition-[width] duration-150`}
-    >
-      <div className={`flex h-16 items-center border-b border-hairline ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
-        {collapsed ? (
-          <Link to="/home" className="flex h-8 w-8 items-center justify-center">
-            <img src={logoUrl} alt="InventionDeck" className="h-8 w-8 rounded-[6px]" />
-          </Link>
-        ) : (
-          <Logo />
-        )}
+    <aside className={`sticky top-0 flex h-screen ${SIDEBAR_WIDTH_COLLAPSED} shrink-0 flex-col items-center border-r border-hairline bg-white`}>
+      <div className="flex h-16 items-center justify-center border-b border-hairline">
+        <Link to="/home" className="flex h-8 w-8 items-center justify-center">
+          <img src={logoUrl} alt="InventionDeck" className="h-8 w-8 rounded-[6px]" />
+        </Link>
       </div>
 
-      <div className="h-px bg-hairline" />
+      <div className="h-px w-full bg-hairline" />
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
+      <nav className="flex w-full flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
         {NAV_ITEMS.map((item) => (
           <Link
             key={item.label}
             to={item.to}
-            className={`flex items-center rounded-lg text-[13.5px] font-semibold transition-colors ${
-              collapsed ? 'flex-col justify-center gap-1 px-0.5 py-2.5' : 'gap-2.5 px-3 py-2.5'
-            } ${
+            className={`flex flex-col items-center justify-center gap-1 rounded-lg px-0.5 py-2.5 text-[13.5px] font-semibold transition-colors ${
               item.match(location.pathname, location.search)
                 ? 'bg-brand-soft text-brand-strong'
                 : 'text-ink-muted hover:bg-canvas-sunken'
             }`}
           >
             <i className={`fi ${item.icon} text-[16px]`} />
-            <span className={collapsed ? 'whitespace-nowrap text-[10.5px] font-semibold leading-none' : ''}>{item.label}</span>
+            <span className="whitespace-nowrap text-[10.5px] font-semibold leading-none">{item.label}</span>
           </Link>
         ))}
       </nav>
 
-      <div className="flex flex-col gap-1.5 border-t border-hairline px-3 py-3">
-        <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
+      <div className="flex w-full flex-col gap-1.5 border-t border-hairline px-3 py-3">
+        <div className="flex items-center justify-center">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas-sunken text-[12px] font-bold text-ink-muted">
             {currentUser?.name?.slice(0, 1) ?? '?'}
           </span>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[12.5px] font-semibold text-ink-strong">{currentUser?.name ?? '게스트'}</p>
-              <p className="truncate text-[11px] text-ink-faint">{currentUser?.email}</p>
-            </div>
-          )}
         </div>
       </div>
-
-      <button
-        onClick={toggleSidebar}
-        className="absolute top-1/2 -right-3 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full border border-hairline-strong bg-white text-[11px] text-ink-muted shadow-sm hover:bg-canvas-sunken"
-        aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
-      >
-        {collapsed ? '›' : '‹'}
-      </button>
     </aside>
   );
 }

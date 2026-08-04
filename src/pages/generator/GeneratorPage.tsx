@@ -13,7 +13,6 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
-import { useUiStore } from '../../store/uiStore';
 import { useToast } from '../../components/ui/Toast';
 import { useCardStore } from '../../store/cardStore';
 import type { BizCard } from '../../types';
@@ -21,12 +20,13 @@ import { generateIdeas } from '../../ai/ideaEngine';
 import { recommendCards } from '../../lib/recommend';
 import { relativeTime } from '../../lib/format';
 
+const IDEA_ACCENTS = ['#e4002b', '#0c43b7', '#16a34a', '#7c3aed'];
+
 export function GeneratorPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const toast = useToast();
   const currentEmail = useAuthStore((s) => s.currentEmail);
-  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
 
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
   const updateGenerator = useProjectStore((s) => s.updateGenerator);
@@ -161,22 +161,25 @@ export function GeneratorPage() {
     <AppShell>
       <div className="pb-36">
       <div className="mx-auto max-w-6xl px-5 py-6">
-        <div className="mb-5 flex items-center justify-between">
-          <h1 className="text-[20px] font-bold text-ink-strong">Generator</h1>
+        <div className="mb-5 flex items-center justify-end">
           <Badge tone={gen.ideas.length > 0 ? 'brand' : 'neutral'}>{gen.ideas.length}개 생성됨</Badge>
         </div>
 
-        {(gen.interest || recommended.length > 0) && (
-          <div className="mb-5 flex flex-col gap-4 rounded-xl border border-hairline bg-white p-4">
-            {gen.interest && (
-              <div>
-                <p className="mb-1.5 text-[11px] font-bold text-ink-faint">채팅에서 정리한 내용</p>
-                <p className="text-[13.5px] leading-relaxed text-ink-strong">{gen.interest}</p>
-              </div>
-            )}
+        <div className="mb-5 grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
+            <Textarea
+              label="관심 분야 / 해결하고 싶은 문제"
+              rows={7}
+              placeholder="예: 반려동물을 키우는 1인 가구를 위한 서비스를 만들고 싶어요"
+              value={gen.interest}
+              onChange={(e) => updateGenerator(project.id, { interest: e.target.value })}
+            />
+          </div>
+          <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
+            <p className="mb-3 text-[13px] font-bold text-ink-strong">✨ 추천 카드</p>
             <RecommendedRail cards={recommended} onAdd={toggleCard} />
           </div>
-        )}
+        </div>
 
         <Tabs
           items={[
@@ -189,26 +192,7 @@ export function GeneratorPage() {
         />
 
         {step === 'select' ? (
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-3 rounded-xl border border-hairline bg-white p-4 sm:grid-cols-2">
-              <Textarea
-                label="관심 분야 / 해결하고 싶은 문제"
-                rows={2}
-                placeholder="예: 반려동물을 키우는 1인 가구를 위한 서비스를 만들고 싶어요"
-                value={gen.interest}
-                onChange={(e) => updateGenerator(project.id, { interest: e.target.value })}
-              />
-              <Textarea
-                label="선호 조건 (선택)"
-                rows={2}
-                placeholder="예: 초기 투자 비용이 적고, 6개월 내 검증 가능한 아이디어였으면 해요"
-                value={gen.problemFocus}
-                onChange={(e) => updateGenerator(project.id, { problemFocus: e.target.value })}
-              />
-            </div>
-
-            <CardLibrary selectedIds={gen.selectedCardIds} onToggle={toggleCard} onOpenDetail={setDetailCard} />
-          </div>
+          <CardLibrary selectedIds={gen.selectedCardIds} onToggle={toggleCard} onOpenDetail={setDetailCard} />
         ) : gen.ideas.length === 0 ? (
           <EmptyState
             title="아직 생성된 아이디어가 없어요"
@@ -231,15 +215,22 @@ export function GeneratorPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {gen.ideas.map((idea, idx) => {
                 const adopted = gen.selectedIdeaId === idea.id;
+                const accent = IDEA_ACCENTS[idx % IDEA_ACCENTS.length];
                 return (
                   <div
                     key={idea.id}
-                    className={`flex flex-col gap-3 rounded-xl border bg-white p-5 ${
+                    className={`flex flex-col gap-3 rounded-xl border border-t-4 bg-white p-5 ${
                       adopted ? 'border-brand ring-1 ring-brand' : 'border-hairline'
                     }`}
+                    style={{ borderTopColor: accent }}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-ink-faint">아이디어 {idx + 1}</span>
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[11px] font-bold"
+                        style={{ backgroundColor: `${accent}1a`, color: accent }}
+                      >
+                        아이디어 {idx + 1}
+                      </span>
                       {adopted && <Badge tone="brand">채택됨</Badge>}
                     </div>
                     <h3 className="text-[16px] font-bold text-ink-strong">{idea.title}</h3>
@@ -271,7 +262,7 @@ export function GeneratorPage() {
         )}
 
         {step === 'select' && (
-          <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-[88px]' : 'left-64'}`}>
+          <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
             <div className="mx-auto flex max-w-6xl flex-col gap-2.5">
               <CardTray cards={selectedCards} onRemove={removeCard} />
               <div className="flex items-center justify-between gap-4 border-t border-hairline pt-2.5">

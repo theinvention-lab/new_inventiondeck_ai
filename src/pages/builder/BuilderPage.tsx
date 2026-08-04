@@ -13,7 +13,6 @@ import { TemplateSelector } from '../../components/builder/TemplateSelector';
 import { TemplateFieldsForm } from '../../components/builder/TemplateFieldsForm';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
-import { useUiStore } from '../../store/uiStore';
 import { useToast } from '../../components/ui/Toast';
 import { openingMessage, generateAiReply } from '../../ai/chatEngine';
 import { makeId } from '../../lib/id';
@@ -30,7 +29,6 @@ export function BuilderPage() {
   const toast = useToast();
   const currentEmail = useAuthStore((s) => s.currentEmail);
   const currentUser = useAuthStore((s) => s.currentUser());
-  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
 
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
   const updateBuilder = useProjectStore((s) => s.updateBuilder);
@@ -369,7 +367,7 @@ export function BuilderPage() {
         )}
       </div>
 
-      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-[88px]' : 'left-64'}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Badge tone="outline">고도화 진행률 {criteriaProgress}%</Badge>
           <Button size="lg" onClick={sendToPlanner}>

@@ -13,8 +13,8 @@ import { useToast } from '../ui/Toast';
 import type { Note } from '../../types';
 
 const PANEL_TOP: Record<'projects' | 'notes', number> = {
-  projects: 20,
-  notes: 72,
+  projects: 24,
+  notes: 92,
 };
 
 function SlidePanel({
@@ -50,7 +50,7 @@ function SlidePanel({
         role="dialog"
         aria-modal="true"
         className="animate-slide-in-right fixed z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col rounded-2xl border border-hairline bg-white shadow-lg"
-        style={{ top: topOffset, right: 84, maxHeight: 'calc(100vh - 40px)' }}
+        style={{ top: topOffset, right: 104, maxHeight: 'calc(100vh - 40px)' }}
       >
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
           <div className="flex items-center gap-3">
@@ -148,26 +148,26 @@ export function RightSidebar() {
 
   return (
     <>
-      <aside className="sticky top-0 flex h-screen w-16 shrink-0 flex-col items-center gap-2 border-l border-hairline bg-white py-5">
+      <aside className="sticky top-0 flex h-screen w-[88px] shrink-0 flex-col items-center gap-3 border-l border-hairline bg-white py-6">
         <button
           onClick={() => setOpenPanel((p) => (p === 'projects' ? null : 'projects'))}
           aria-label="내 프로젝트"
-          className={`flex h-11 w-14 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors ${
+          className={`flex h-16 w-[72px] flex-col items-center justify-center gap-2 rounded-xl transition-colors ${
             openPanel === 'projects' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
           }`}
         >
-          <i className="fi fi-rr-layers text-[17px]" />
-          <span className="text-[10.5px] font-semibold leading-none whitespace-nowrap">프로젝트</span>
+          <i className="fi fi-rr-layers text-[19px]" />
+          <span className="text-[11px] font-semibold leading-none whitespace-nowrap">프로젝트</span>
         </button>
         <button
           onClick={() => setOpenPanel((p) => (p === 'notes' ? null : 'notes'))}
           aria-label="내 메모"
-          className={`flex h-11 w-14 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors ${
+          className={`flex h-16 w-[72px] flex-col items-center justify-center gap-2 rounded-xl transition-colors ${
             openPanel === 'notes' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
           }`}
         >
-          <i className="fi fi-rr-paper-plane text-[17px]" />
-          <span className="text-[10.5px] font-semibold leading-none whitespace-nowrap">메모</span>
+          <i className="fi fi-rr-paper-plane text-[19px]" />
+          <span className="text-[11px] font-semibold leading-none whitespace-nowrap">메모</span>
         </button>
       </aside>
 
