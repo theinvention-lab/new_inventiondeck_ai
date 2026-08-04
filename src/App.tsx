@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Navigate, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { useCardStore } from './store/cardStore';
 import { LoginPage } from './pages/auth/LoginPage';
 import { SignupPage } from './pages/auth/SignupPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
@@ -18,6 +20,10 @@ function RootRedirect() {
 }
 
 function App() {
+  useEffect(() => {
+    useCardStore.getState().loadCards();
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<RootRedirect />} />

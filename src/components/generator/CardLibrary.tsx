@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { BizCard, CardCategory } from '../../types';
-import { getAllCards } from '../../data/cards';
+import { useCardStore } from '../../store/cardStore';
 import { CATEGORY_LABEL, CATEGORY_ORDER } from '../../data/taxonomy';
 import { CardTile } from './CardTile';
 import { Input } from '../ui/Input';
@@ -25,7 +25,7 @@ export function CardLibrary({
   const [sort, setSort] = useState<SortMode>('relevance');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const allCards = useMemo(() => getAllCards(), []);
+  const allCards = useCardStore((s) => s.cards);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

@@ -1,8 +1,8 @@
 import type { BizCard } from '../types';
-import { getAllCards, getCardsByIds } from '../data/cards';
 
-export function recommendCards(history: string[], excludeIds: string[], limit = 8): BizCard[] {
-  const historyCards = getCardsByIds(history.slice(-20));
+export function recommendCards(allCards: BizCard[], history: string[], excludeIds: string[], limit = 8): BizCard[] {
+  const historySet = new Set(history.slice(-20));
+  const historyCards = allCards.filter((c) => historySet.has(c.id));
   if (historyCards.length === 0) return [];
 
   const tagWeight = new Map<string, number>();
@@ -15,7 +15,7 @@ export function recommendCards(history: string[], excludeIds: string[], limit = 
   const exclude = new Set(excludeIds);
   const scored: { card: BizCard; score: number }[] = [];
 
-  for (const card of getAllCards()) {
+  for (const card of allCards) {
     if (exclude.has(card.id)) continue;
     let score = 0;
     for (const tag of card.tags) {

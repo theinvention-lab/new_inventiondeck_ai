@@ -8,7 +8,7 @@ export const SIDEBAR_WIDTH_EXPANDED = 'w-64';
 export const SIDEBAR_WIDTH_COLLAPSED = 'w-[88px]';
 
 const NAV_ITEMS = [
-  { to: '/home', icon: '🏠', label: '홈', match: (path: string) => path === '/home' || path === '/' },
+  { to: '/home', icon: '🏠', label: '홈', match: (path: string, search: string) => path === '/' || (path === '/home' && !search.includes('mode=')) },
   { to: '/home?mode=generator', icon: '✨', label: 'Generator', match: (path: string, search: string) => path.includes('/generator') || (path === '/home' && search.includes('mode=generator')) },
   { to: '/home?mode=builder', icon: '🧩', label: 'Builder', match: (path: string, search: string) => path.includes('/builder') || (path === '/home' && search.includes('mode=builder')) },
   { to: '/home?mode=planner', icon: '📄', label: 'Planner', match: (path: string, search: string) => path.includes('/planner') || (path === '/home' && search.includes('mode=planner')) },

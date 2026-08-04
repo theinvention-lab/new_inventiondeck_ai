@@ -118,16 +118,16 @@ export function HomePage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-4xl px-5 py-10">
-        <h1 className="text-center text-[24px] font-bold text-ink-strong">
+      <div className="mx-auto flex h-screen max-w-4xl flex-col overflow-hidden px-5 py-10">
+        <h1 className="shrink-0 text-center text-[24px] font-bold text-ink-strong">
           {currentUser?.name ?? '게스트'}님의 워크스페이스
         </h1>
 
-        <div className="mt-6">
+        <div className="mt-6 shrink-0">
           <ChatModeButtons active={mode} onSelect={selectMode} />
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 min-h-0 flex-1">
           <HomeChatPanel
             mode={mode}
             messages={chats[mode]}

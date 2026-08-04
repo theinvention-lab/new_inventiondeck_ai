@@ -16,7 +16,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useUiStore } from '../../store/uiStore';
 import { useToast } from '../../components/ui/Toast';
-import { getCardsByIds } from '../../data/cards';
+import { useCardStore } from '../../store/cardStore';
 import type { BizCard, IdeaDraft } from '../../types';
 import { generateIdeas } from '../../ai/ideaEngine';
 import { recommendCards } from '../../lib/recommend';
@@ -50,15 +50,18 @@ export function GeneratorPage() {
     return interval;
   };
 
-  const selectedCards = useMemo(
-    () => (project ? getCardsByIds(project.generator.selectedCardIds) : []),
-    [project],
-  );
+  const allCards = useCardStore((s) => s.cards);
+
+  const selectedCards = useMemo(() => {
+    if (!project) return [];
+    const idSet = new Set(project.generator.selectedCardIds);
+    return allCards.filter((c) => idSet.has(c.id));
+  }, [project, allCards]);
 
   const recommended = useMemo(() => {
     if (!project) return [];
-    return recommendCards(project.generator.cardHistory, project.generator.selectedCardIds, 8);
-  }, [project]);
+    return recommendCards(allCards, project.generator.cardHistory, project.generator.selectedCardIds, 8);
+  }, [project, allCards]);
 
   if (!project || project.ownerEmail !== currentEmail) {
     return (

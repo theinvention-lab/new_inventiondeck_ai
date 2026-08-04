@@ -7,7 +7,7 @@ import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
 import { useAuthStore } from '../../store/authStore';
-import { useProjectStore } from '../../store/projectStore';
+import { useProjectStore, TRASH_RETENTION_DAYS } from '../../store/projectStore';
 import { useNoteStore } from '../../store/noteStore';
 import { useToast } from '../ui/Toast';
 import type { Note } from '../../types';
@@ -71,13 +71,15 @@ export function RightSidebar() {
 
   const projects = useProjectStore((s) => s.projects);
   const createProject = useProjectStore((s) => s.createProject);
+  const softDeleteProject = useProjectStore((s) => s.softDeleteProject);
 
   const notes = useNoteStore((s) => s.notes);
   const createNote = useNoteStore((s) => s.createNote);
   const deleteNote = useNoteStore((s) => s.deleteNote);
 
   const [openPanel, setOpenPanel] = useState<'projects' | 'notes' | null>(null);
-  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [creatingNote, setCreatingNote] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
@@ -108,23 +110,35 @@ export function RightSidebar() {
     navigate(`/project/${project.id}/generator`);
   };
 
-  const openNewNoteDialog = () => {
-    setOpenPanel(null);
+  const confirmDelete = () => {
+    if (confirmDeleteId) {
+      softDeleteProject(confirmDeleteId);
+      toast.push('휴지통으로 이동했습니다.');
+    }
+    setConfirmDeleteId(null);
+  };
+
+  const openNewNoteForm = () => {
     setTitle('');
     setContent('');
-    setNoteDialogOpen(true);
+    setCreatingNote(true);
   };
 
   const submitNote = () => {
     if (!title.trim() && !content.trim()) return;
     createNote(email, title, content);
     toast.push('메모를 저장했어요.');
-    setNoteDialogOpen(false);
+    setCreatingNote(false);
   };
 
   const sendNoteToGenerator = (note: Note) => {
     setOpenPanel(null);
     navigate(`/home?mode=generator&noteId=${note.id}`);
+  };
+
+  const closeNotesPanel = () => {
+    setOpenPanel(null);
+    setCreatingNote(false);
   };
 
   return (
@@ -138,7 +152,7 @@ export function RightSidebar() {
           }`}
         >
           <span className="text-[17px]">📁</span>
-          <span className="text-[9px] font-semibold leading-none whitespace-nowrap">프로젝트</span>
+          <span className="text-[10.5px] font-semibold leading-none whitespace-nowrap">프로젝트</span>
         </button>
         <button
           onClick={() => setOpenPanel((p) => (p === 'notes' ? null : 'notes'))}
@@ -148,7 +162,7 @@ export function RightSidebar() {
           }`}
         >
           <span className="text-[17px]">📝</span>
-          <span className="text-[9px] font-semibold leading-none whitespace-nowrap">메모</span>
+          <span className="text-[10.5px] font-semibold leading-none whitespace-nowrap">메모</span>
         </button>
       </aside>
 
@@ -166,89 +180,121 @@ export function RightSidebar() {
             {active.map((p) => {
               const idea = p.generator.ideas.find((i) => i.id === p.generator.selectedIdeaId) ?? p.generator.ideas[0];
               return (
-                <button
+                <div
                   key={p.id}
-                  onClick={() => openProject(p.id, p.stage)}
-                  className="flex flex-col gap-1 rounded-xl border border-hairline bg-white px-4 py-3 text-left shadow-sm transition-shadow hover:shadow-md"
+                  className="group relative flex flex-col gap-1 rounded-xl border border-hairline bg-white px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="truncate text-[13.5px] font-bold text-ink-strong">{p.title}</h3>
-                    <span className="shrink-0 rounded-full bg-canvas-sunken px-2 py-0.5 text-[10.5px] font-semibold text-ink-faint">
-                      {p.stage === 'completed' ? '완료' : p.stage}
-                    </span>
-                  </div>
-                  <p className="truncate text-[12px] text-ink-muted">{idea?.oneLiner ?? p.description ?? '아직 요약이 없습니다.'}</p>
-                </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(p.id)}
+                    aria-label="프로젝트 삭제"
+                    className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full text-[11px] text-ink-faint hover:bg-canvas-sunken hover:text-danger"
+                  >
+                    ✕
+                  </button>
+                  <button onClick={() => openProject(p.id, p.stage)} className="flex flex-col gap-1 pr-5 text-left">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="truncate text-[13.5px] font-bold text-ink-strong">{p.title}</h3>
+                      <span className="shrink-0 rounded-full bg-canvas-sunken px-2 py-0.5 text-[10.5px] font-semibold text-ink-faint">
+                        {p.stage === 'completed' ? '완료' : p.stage}
+                      </span>
+                    </div>
+                    <p className="truncate text-[12px] text-ink-muted">{idea?.oneLiner ?? p.description ?? '아직 요약이 없습니다.'}</p>
+                  </button>
+                </div>
               );
             })}
           </div>
         )}
       </SlidePanel>
 
-      <SlidePanel open={openPanel === 'notes'} onClose={() => setOpenPanel(null)} title="내 메모" topOffset={PANEL_TOP.notes}>
-        <div className="mb-4 flex justify-end">
-          <Button size="sm" onClick={openNewNoteDialog}>
-            + 새 메모
-          </Button>
-        </div>
-        {myNotes.length === 0 ? (
-          <button
-            onClick={openNewNoteDialog}
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-strong px-6 py-12 text-center transition-colors hover:border-brand"
-          >
-            <span className="text-2xl">📝</span>
-            <span className="text-[13.5px] font-bold text-ink-strong">새 메모 작성하기</span>
-          </button>
-        ) : (
-          <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
-            {myNotes.map((n) => (
-              <div key={n.id} className="flex flex-col gap-1.5 rounded-xl border border-hairline bg-white px-4 py-3 shadow-sm">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="truncate text-[13.5px] font-bold text-ink-strong">{n.title}</h3>
-                  <button
-                    onClick={() => deleteNote(n.id)}
-                    aria-label="메모 삭제"
-                    className="shrink-0 text-[11px] text-ink-faint hover:text-danger"
-                  >
-                    삭제
-                  </button>
-                </div>
-                {n.content && <p className="line-clamp-2 text-[12px] leading-relaxed text-ink-muted">{n.content}</p>}
-                <button
-                  onClick={() => sendNoteToGenerator(n)}
-                  className="mt-1 w-fit rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand-strong hover:bg-brand-soft/70"
-                >
-                  ✨ Generator로 보내기
-                </button>
-              </div>
-            ))}
+      <SlidePanel open={openPanel === 'notes'} onClose={closeNotesPanel} title="내 메모" topOffset={PANEL_TOP.notes}>
+        {creatingNote ? (
+          <div className="flex flex-col gap-3">
+            <Input
+              label="제목"
+              name="title"
+              placeholder="예: 반려동물 산책 매칭 아이디어"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              autoFocus
+            />
+            <Textarea
+              label="내용"
+              name="content"
+              placeholder="떠오른 생각을 자유롭게 적어보세요…"
+              rows={4}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <Button variant="outline" fullWidth onClick={() => setCreatingNote(false)}>
+                취소
+              </Button>
+              <Button fullWidth onClick={submitNote}>
+                메모 저장
+              </Button>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="mb-4 flex justify-end">
+              <Button size="sm" onClick={openNewNoteForm}>
+                + 새 메모
+              </Button>
+            </div>
+            {myNotes.length === 0 ? (
+              <button
+                onClick={openNewNoteForm}
+                className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-strong px-6 py-12 text-center transition-colors hover:border-brand"
+              >
+                <span className="text-2xl">📝</span>
+                <span className="text-[13.5px] font-bold text-ink-strong">새 메모 작성하기</span>
+              </button>
+            ) : (
+              <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
+                {myNotes.map((n) => (
+                  <div key={n.id} className="flex flex-col gap-1.5 rounded-xl border border-hairline bg-white px-4 py-3 shadow-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="truncate text-[13.5px] font-bold text-ink-strong">{n.title}</h3>
+                      <button
+                        onClick={() => deleteNote(n.id)}
+                        aria-label="메모 삭제"
+                        className="shrink-0 text-[11px] text-ink-faint hover:text-danger"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                    {n.content && <p className="line-clamp-2 text-[12px] leading-relaxed text-ink-muted">{n.content}</p>}
+                    <button
+                      onClick={() => sendNoteToGenerator(n)}
+                      className="mt-1 w-fit rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand-strong hover:bg-brand-soft/70"
+                    >
+                      ✨ Generator로 보내기
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </SlidePanel>
 
-      <Dialog open={noteDialogOpen} onClose={() => setNoteDialogOpen(false)} title="새 메모" size="sm">
-        <div className="flex flex-col gap-4">
-          <Input
-            label="제목"
-            name="title"
-            placeholder="예: 반려동물 산책 매칭 아이디어"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            autoFocus
-          />
-          <Textarea
-            label="내용"
-            name="content"
-            placeholder="떠오른 생각을 자유롭게 적어보세요…"
-            rows={4}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-          <Button fullWidth onClick={submitNote}>
-            메모 저장
-          </Button>
-        </div>
-      </Dialog>
+      <Dialog
+        open={!!confirmDeleteId}
+        onClose={() => setConfirmDeleteId(null)}
+        title="프로젝트를 삭제할까요?"
+        description={`휴지통으로 이동하며, ${TRASH_RETENTION_DAYS}일 후 자동으로 영구 삭제됩니다.`}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>
+              취소
+            </Button>
+            <Button variant="danger" onClick={confirmDelete}>
+              삭제
+            </Button>
+          </>
+        }
+      />
     </>
   );
 }
