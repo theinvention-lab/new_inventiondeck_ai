@@ -162,14 +162,21 @@ export function GeneratorPage() {
       <div className="pb-36">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 flex items-center justify-between">
-          <div>
-            <h1 className="text-[20px] font-bold text-ink-strong">Generator</h1>
-            <p className="mt-1 text-[13px] text-ink-muted">
-              카드를 조합하고 관심사를 입력하면 AI가 서로 다른 사업 아이디어 초안을 제안합니다.
-            </p>
-          </div>
+          <h1 className="text-[20px] font-bold text-ink-strong">Generator</h1>
           <Badge tone={gen.ideas.length > 0 ? 'brand' : 'neutral'}>{gen.ideas.length}개 생성됨</Badge>
         </div>
+
+        {(gen.interest || recommended.length > 0) && (
+          <div className="mb-5 flex flex-col gap-4 rounded-xl border border-hairline bg-white p-4">
+            {gen.interest && (
+              <div>
+                <p className="mb-1.5 text-[11px] font-bold text-ink-faint">채팅에서 정리한 내용</p>
+                <p className="text-[13.5px] leading-relaxed text-ink-strong">{gen.interest}</p>
+              </div>
+            )}
+            <RecommendedRail cards={recommended} onAdd={toggleCard} />
+          </div>
+        )}
 
         <Tabs
           items={[
@@ -199,8 +206,6 @@ export function GeneratorPage() {
                 onChange={(e) => updateGenerator(project.id, { problemFocus: e.target.value })}
               />
             </div>
-
-            <RecommendedRail cards={recommended} onAdd={toggleCard} />
 
             <CardLibrary selectedIds={gen.selectedCardIds} onToggle={toggleCard} onOpenDetail={setDetailCard} />
           </div>

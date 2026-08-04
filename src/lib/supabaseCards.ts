@@ -12,18 +12,18 @@ interface BusinessCardRow {
   case: string | null;
 }
 
-// The live Supabase category values (public.business_cards / business_cards_2)
-// are expected to be the English labels (Theme/Tech/Revenue/Trend/Segment/
-// Feature), but real rows may carry variants ("Revenue Model", "Customer
-// Segment", trailing whitespace, Korean labels, the "Segement" typo, …).
-// Matching is substring-based and case-insensitive so any of those still land
-// on the right category instead of being silently dropped.
+// The live Supabase category values (public.business_cards / business_cards_2):
+// Theme, Tech, Revenue, Trend, Target (→ 고객 세그먼트), Feature. "Target" is
+// the confirmed real column value for the segment/customer category — it does
+// not literally say "Segment". Matching is substring-based and
+// case-insensitive so minor variants and Korean labels still land correctly
+// instead of being silently dropped.
 const CATEGORY_KEYWORDS: Array<{ category: CardCategory; keywords: string[] }> = [
   { category: 'theme', keywords: ['theme', '산업'] },
   { category: 'trend', keywords: ['trend', '트렌드'] },
   { category: 'tech', keywords: ['tech', '기술'] },
   { category: 'revenue', keywords: ['revenue', '수익'] },
-  { category: 'segment', keywords: ['segment', 'segement', '세그먼트', '고객'] },
+  { category: 'segment', keywords: ['target', 'segment', 'segement', '세그먼트', '고객'] },
   { category: 'feature', keywords: ['feature', '피쳐', '피처'] },
 ];
 
