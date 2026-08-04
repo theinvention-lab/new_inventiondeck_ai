@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from './Logo';
-import { Dialog } from '../ui/Dialog';
-import { Button } from '../ui/Button';
-import { Textarea } from '../ui/Textarea';
-import { useToast } from '../ui/Toast';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
 import type { Project, ProjectStage } from '../../types';
@@ -16,34 +12,22 @@ const PLANNER_STAGES: { id: ProjectStage; label: string; icon: string; iconBg: s
   { id: 'generator', label: 'Generator', icon: '✨', iconBg: '#fde7ea', path: (id) => `/project/${id}/generator` },
   { id: 'builder', label: 'Builder', icon: '🧩', iconBg: '#eef2fc', path: (id) => `/project/${id}/builder` },
   { id: 'planner', label: 'Planner', icon: '📄', iconBg: '#e6f7ec', path: (id) => `/project/${id}/planner` },
-  { id: 'deck', label: 'Deck', icon: '📊', iconBg: '#f3ecfd', path: (id) => `/project/${id}/deck` },
 ];
 
 export function Sidebar({ project, activeStage }: { project?: Project; activeStage?: ProjectStage }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const toast = useToast();
   const currentUser = useAuthStore((s) => s.currentUser());
   const logout = useAuthStore((s) => s.logout);
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
 
   const [plannerOpen, setPlannerOpen] = useState(!!project);
-  const [guideOpen, setGuideOpen] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [feedbackText, setFeedbackText] = useState('');
 
   const activeIndex = project ? PLANNER_STAGES.findIndex((s) => s.id === activeStage) : -1;
   const onHome = location.pathname.startsWith('/home');
   const onMyPage = location.pathname.startsWith('/mypage');
   const onPlannerRoute = location.pathname.startsWith('/project/');
-
-  const submitFeedback = () => {
-    if (!feedbackText.trim()) return;
-    setFeedbackOpen(false);
-    setFeedbackText('');
-    toast.push('피드백을 보내주셔서 감사합니다!');
-  };
 
   return (
     <aside
@@ -119,21 +103,18 @@ export function Sidebar({ project, activeStage }: { project?: Project; activeSta
         <NavItem to="/mypage" icon="👤" label="마이페이지" active={onMyPage} collapsed={collapsed} />
       </nav>
 
-      <div className="flex flex-col gap-0.5 border-t border-hairline px-3 py-3">
-        <button
-          onClick={() => setGuideOpen(true)}
-          className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-ink-muted hover:bg-canvas-sunken ${collapsed ? 'justify-center' : ''}`}
-        >
-          <span>📖</span>
-          {!collapsed && '사용 가이드'}
-        </button>
-        <button
-          onClick={() => setFeedbackOpen(true)}
-          className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-ink-muted hover:bg-canvas-sunken ${collapsed ? 'justify-center' : ''}`}
-        >
-          <span>💬</span>
-          {!collapsed && '피드백'}
-        </button>
+      <div className="flex flex-col gap-2 border-t border-hairline px-3 py-3">
+        <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas-sunken text-[12px] font-bold text-ink-muted">
+            {currentUser?.name?.slice(0, 1) ?? '?'}
+          </span>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12.5px] font-semibold text-ink-strong">{currentUser?.name ?? '게스트'}</p>
+              <p className="truncate text-[11px] text-ink-faint">{currentUser?.email}</p>
+            </div>
+          )}
+        </div>
         <button
           onClick={() => {
             logout();
@@ -144,18 +125,6 @@ export function Sidebar({ project, activeStage }: { project?: Project; activeSta
           <span>🚪</span>
           {!collapsed && '로그아웃'}
         </button>
-
-        {!collapsed && (
-          <div className="mt-2 flex items-center gap-2 border-t border-hairline px-1 pt-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas-sunken text-[12px] font-bold text-ink-muted">
-              {currentUser?.name?.slice(0, 1) ?? '?'}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[12.5px] font-semibold text-ink-strong">{currentUser?.name ?? '게스트'}</p>
-              <p className="truncate text-[11px] text-ink-faint">{currentUser?.email}</p>
-            </div>
-          </div>
-        )}
       </div>
 
       <button
@@ -165,44 +134,6 @@ export function Sidebar({ project, activeStage }: { project?: Project; activeSta
       >
         {collapsed ? '›' : '‹'}
       </button>
-
-      <Dialog open={guideOpen} onClose={() => setGuideOpen(false)} title="사용 가이드" size="md">
-        <div className="flex flex-col gap-3 text-[13px] leading-relaxed text-ink-muted">
-          <p>
-            <strong className="text-ink-strong">1. Generator</strong> — 비즈니스 카드를 조합해 AI가 새로운 사업 아이디어를
-            제안합니다.
-          </p>
-          <p>
-            <strong className="text-ink-strong">2. Builder</strong> — AI 채팅과 점검 기준으로 아이디어를 검증하고
-            구체화합니다.
-          </p>
-          <p>
-            <strong className="text-ink-strong">3. Planner</strong> — 검증된 내용을 바탕으로 사업계획서를 작성하고 PDF로
-            내보냅니다.
-          </p>
-          <p>
-            <strong className="text-ink-strong">4. Deck</strong> — 투자자용 IR Deck을 슬라이드로 구성하고 PPT로
-            내보냅니다.
-          </p>
-        </div>
-      </Dialog>
-
-      <Dialog
-        open={feedbackOpen}
-        onClose={() => setFeedbackOpen(false)}
-        title="피드백 보내기"
-        description="개선하면 좋을 점이나 불편했던 점을 알려주세요."
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setFeedbackOpen(false)}>
-              취소
-            </Button>
-            <Button onClick={submitFeedback}>보내기</Button>
-          </>
-        }
-      >
-        <Textarea rows={4} value={feedbackText} onChange={(e) => setFeedbackText(e.target.value)} placeholder="자유롭게 남겨주세요…" />
-      </Dialog>
     </aside>
   );
 }

@@ -3,7 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type {
   BuilderState,
   CriterionEntry,
-  DeckState,
   Folder,
   GeneratorState,
   PlannerState,
@@ -49,18 +48,11 @@ function defaultBuilder(): BuilderState {
 function defaultPlanner(): PlannerState {
   return {
     bizPlanSections: [],
-    designTemplateId: 'naver-mint',
-    bizPlanGenerated: false,
-    bizPlanProgress: 0,
-    lastExport: null,
-  };
-}
-
-function defaultDeck(): DeckState {
-  return {
     pitchSlides: [],
     designTemplateId: 'naver-mint',
+    bizPlanGenerated: false,
     pitchDeckGenerated: false,
+    bizPlanProgress: 0,
     pitchDeckProgress: 0,
     lastExport: null,
   };
@@ -82,7 +74,6 @@ export function createEmptyProject(ownerEmail: string, title: string): Project {
     generator: defaultGenerator(),
     builder: defaultBuilder(),
     planner: defaultPlanner(),
-    deck: defaultDeck(),
   };
 }
 
@@ -96,7 +87,6 @@ interface ProjectStoreState {
   updateGenerator: (id: string, patch: Partial<GeneratorState>) => void;
   updateBuilder: (id: string, patch: Partial<BuilderState>) => void;
   updatePlanner: (id: string, patch: Partial<PlannerState>) => void;
-  updateDeck: (id: string, patch: Partial<DeckState>) => void;
 
   softDeleteProject: (id: string) => void;
   restoreProject: (id: string) => void;
@@ -154,14 +144,6 @@ export const useProjectStore = create<ProjectStoreState>()(
         set((s) => ({
           projects: s.projects.map((p) =>
             p.id === id ? { ...p, planner: { ...p.planner, ...patch }, updatedAt: new Date().toISOString() } : p,
-          ),
-        }));
-      },
-
-      updateDeck: (id, patch) => {
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id ? { ...p, deck: { ...p.deck, ...patch }, updatedAt: new Date().toISOString() } : p,
           ),
         }));
       },
@@ -224,7 +206,7 @@ export const useProjectStore = create<ProjectStoreState>()(
     {
       name: 'inventiondeck:projects',
       storage: createJSONStorage(() => localStorage),
-      version: 3,
+      version: 4,
       migrate: (persisted, fromVersion) => {
         const state = persisted as { projects?: Array<Record<string, unknown>> } | undefined;
         if (state?.projects) {
@@ -236,7 +218,7 @@ export const useProjectStore = create<ProjectStoreState>()(
             if (fromVersion < 2) {
               const oldPlanner = (next.planner as Record<string, unknown>) ?? {};
               const builder = next.builder ?? next.developer ?? defaultBuilder();
-              const planner: PlannerState = {
+              const planner = {
                 bizPlanSections: (oldPlanner.bizPlanSections as PlannerState['bizPlanSections']) ?? [],
                 designTemplateId: (oldPlanner.designTemplateId as PlannerState['designTemplateId']) ?? 'naver-mint',
                 bizPlanGenerated: (oldPlanner.bizPlanGenerated as boolean) ?? false,
@@ -246,14 +228,14 @@ export const useProjectStore = create<ProjectStoreState>()(
                     ? (oldPlanner.lastExport as PlannerState['lastExport'])
                     : null,
               };
-              const deck: DeckState = (next.deck as DeckState) ?? {
-                pitchSlides: (oldPlanner.pitchSlides as DeckState['pitchSlides']) ?? [],
-                designTemplateId: (oldPlanner.designTemplateId as DeckState['designTemplateId']) ?? 'naver-mint',
+              const deck = (next.deck as Record<string, unknown>) ?? {
+                pitchSlides: (oldPlanner.pitchSlides as PlannerState['pitchSlides']) ?? [],
+                designTemplateId: (oldPlanner.designTemplateId as PlannerState['designTemplateId']) ?? 'naver-mint',
                 pitchDeckGenerated: (oldPlanner.pitchDeckGenerated as boolean) ?? false,
                 pitchDeckProgress: (oldPlanner.pitchDeckProgress as number) ?? 0,
                 lastExport:
-                  (oldPlanner.lastExport as DeckState['lastExport'] | undefined)?.type === 'ppt'
-                    ? (oldPlanner.lastExport as DeckState['lastExport'])
+                  (oldPlanner.lastExport as PlannerState['lastExport'] | undefined)?.type === 'ppt'
+                    ? (oldPlanner.lastExport as PlannerState['lastExport'])
                     : null,
               };
               const stage = next.stage === 'developer' ? 'builder' : next.stage;
@@ -279,6 +261,34 @@ export const useProjectStore = create<ProjectStoreState>()(
               };
             }
 
+            // v3 → v4: merge the standalone Deck stage back into Planner —
+            // one Planner stage now produces both the business plan
+            // document and the pitch deck.
+            if (fromVersion < 4) {
+              const oldPlanner = (next.planner as Record<string, unknown>) ?? {};
+              const oldDeck = (next.deck as Record<string, unknown>) ?? {};
+              const planner: PlannerState = {
+                bizPlanSections: (oldPlanner.bizPlanSections as PlannerState['bizPlanSections']) ?? [],
+                pitchSlides: (oldDeck.pitchSlides as PlannerState['pitchSlides']) ?? [],
+                designTemplateId:
+                  (oldPlanner.designTemplateId as PlannerState['designTemplateId']) ??
+                  (oldDeck.designTemplateId as PlannerState['designTemplateId']) ??
+                  'naver-mint',
+                bizPlanGenerated: (oldPlanner.bizPlanGenerated as boolean) ?? false,
+                pitchDeckGenerated: (oldDeck.pitchDeckGenerated as boolean) ?? false,
+                bizPlanProgress: (oldPlanner.bizPlanProgress as number) ?? 0,
+                pitchDeckProgress: (oldDeck.pitchDeckProgress as number) ?? 0,
+                lastExport:
+                  (oldPlanner.lastExport as PlannerState['lastExport']) ??
+                  (oldDeck.lastExport as PlannerState['lastExport']) ??
+                  null,
+              };
+              const stage = next.stage === 'deck' ? 'planner' : next.stage;
+              const rest = { ...next };
+              delete rest.deck;
+              next = { ...rest, planner, stage };
+            }
+
             return next;
           });
         }
@@ -294,6 +304,6 @@ export function projectProgress(project: Project): number {
   if (project.generator.ideas.length > 0) score += 1;
   if (project.builder.criteria.some((c) => c.status !== 'unmet')) score += 1;
   if (project.planner.bizPlanGenerated) score += 1;
-  if (project.deck.pitchDeckGenerated) score += 1;
+  if (project.planner.pitchDeckGenerated) score += 1;
   return Math.round((score / total) * 100);
 }

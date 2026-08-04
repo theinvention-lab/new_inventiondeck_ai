@@ -9,7 +9,6 @@ import { MyPage } from './pages/mypage/MyPage';
 import { GeneratorPage } from './pages/generator/GeneratorPage';
 import { BuilderPage } from './pages/builder/BuilderPage';
 import { PlannerPage } from './pages/planner/PlannerPage';
-import { DeckPage } from './pages/deck/DeckPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { useAuthStore } from './store/authStore';
 
@@ -67,15 +66,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/project/:projectId/deck"
-        element={
-          <ProtectedRoute>
-            <DeckPage />
-          </ProtectedRoute>
-        }
-      />
-
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

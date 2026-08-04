@@ -6,8 +6,7 @@ const STAGE_PATH: Record<Project['stage'], string> = {
   generator: 'generator',
   builder: 'builder',
   planner: 'planner',
-  deck: 'deck',
-  completed: 'deck',
+  completed: 'planner',
 };
 
 export function IdeaSwitcher({ projects }: { projects: Project[] }) {

@@ -9,7 +9,6 @@ const STAGE_LABEL: Record<Project['stage'], string> = {
   generator: 'Generator 진행중',
   builder: 'Builder 진행중',
   planner: 'Planner 진행중',
-  deck: 'Deck 진행중',
   completed: '완료',
 };
 
@@ -17,8 +16,7 @@ const STAGE_PATH: Record<Project['stage'], string> = {
   generator: 'generator',
   builder: 'builder',
   planner: 'planner',
-  deck: 'deck',
-  completed: 'deck',
+  completed: 'planner',
 };
 
 export function ProjectCard({
@@ -66,7 +64,7 @@ export function ProjectCard({
           <span title="Generator">{project.generator.ideas.length > 0 ? '✅' : '▫️'}</span>
           <span title="Builder">{project.builder.criteria.some((c) => c.status !== 'unmet') ? '✅' : '▫️'}</span>
           <span title="사업계획서">{project.planner.bizPlanGenerated ? '✅' : '▫️'}</span>
-          <span title="IR Deck">{project.deck.pitchDeckGenerated ? '✅' : '▫️'}</span>
+          <span title="IR Deck">{project.planner.pitchDeckGenerated ? '✅' : '▫️'}</span>
         </div>
       </div>
 

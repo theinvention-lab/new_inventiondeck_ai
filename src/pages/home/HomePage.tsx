@@ -16,8 +16,7 @@ import { timeGreeting } from '../../lib/greeting';
 const QUICK_MOVES = [
   { stage: 'generator' as const, name: 'Generator', desc: '카드로 아이디어 생성', icon: '✨', iconBg: '#fde7ea', color: '#e4002b' },
   { stage: 'builder' as const, name: 'Builder', desc: '템플릿으로 구체화', icon: '🧩', iconBg: '#eef2fc', color: '#0c43b7' },
-  { stage: 'planner' as const, name: 'Planner', desc: '사업계획서 작성', icon: '📄', iconBg: '#e6f7ec', color: '#16a34a' },
-  { stage: 'deck' as const, name: 'Deck', desc: 'IR Deck 생성', icon: '📊', iconBg: '#f3ecfd', color: '#7c3aed' },
+  { stage: 'planner' as const, name: 'Planner', desc: '사업계획서 & IR Deck 작성', icon: '📄', iconBg: '#e6f7ec', color: '#16a34a' },
 ];
 
 function sampleCards(n: number) {
@@ -153,7 +152,7 @@ export function HomePage() {
           {/* Quick moves */}
           <div>
             <p className="mb-3 text-[13px] font-bold text-ink-muted">빠른 이동</p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {QUICK_MOVES.map((q) => (
                 <button
                   key={q.stage}
@@ -194,7 +193,7 @@ export function HomePage() {
                 return (
                   <button
                     key={p.id}
-                    onClick={() => navigate(`/project/${p.id}/${p.stage === 'completed' ? 'deck' : p.stage}`)}
+                    onClick={() => navigate(`/project/${p.id}/${p.stage === 'completed' ? 'planner' : p.stage}`)}
                     className="flex flex-col gap-2 rounded-2xl bg-white p-5 text-left shadow-sm transition-shadow hover:shadow-md"
                   >
                     <div className="flex items-center gap-2">

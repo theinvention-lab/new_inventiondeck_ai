@@ -138,21 +138,16 @@ export type DesignTemplateId = 'naver-mint' | 'ink-mono' | 'sunrise' | 'slate-pr
 
 export interface PlannerState {
   bizPlanSections: PlanSection[];
-  designTemplateId: DesignTemplateId;
-  bizPlanGenerated: boolean;
-  bizPlanProgress: number;
-  lastExport: { type: 'pdf'; at: string; filename: string } | null;
-}
-
-export interface DeckState {
   pitchSlides: PitchSlide[];
   designTemplateId: DesignTemplateId;
+  bizPlanGenerated: boolean;
   pitchDeckGenerated: boolean;
+  bizPlanProgress: number;
   pitchDeckProgress: number;
-  lastExport: { type: 'ppt'; at: string; filename: string } | null;
+  lastExport: { type: 'pdf' | 'ppt'; at: string; filename: string } | null;
 }
 
-export type ProjectStage = 'generator' | 'builder' | 'planner' | 'deck' | 'completed';
+export type ProjectStage = 'generator' | 'builder' | 'planner' | 'completed';
 
 export interface Project {
   id: string;
@@ -168,7 +163,6 @@ export interface Project {
   generator: GeneratorState;
   builder: BuilderState;
   planner: PlannerState;
-  deck: DeckState;
 }
 
 export interface Folder {
