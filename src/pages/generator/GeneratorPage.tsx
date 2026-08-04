@@ -188,7 +188,7 @@ export function GeneratorPage() {
   };
 
   return (
-    <AppShell project={project} activeStage="generator">
+    <AppShell>
       <div className="pb-24">
       <CardTray cards={selectedCards} onRemove={removeCard} />
 

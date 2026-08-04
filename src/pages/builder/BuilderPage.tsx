@@ -224,7 +224,7 @@ export function BuilderPage() {
   }[builder.autosaveStatus];
 
   return (
-    <AppShell project={project} activeStage="builder">
+    <AppShell>
       <div className="pb-20">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">

@@ -172,6 +172,15 @@ export interface Folder {
   createdAt: string;
 }
 
+export interface Note {
+  id: string;
+  ownerEmail: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   email: string;
   name: string;
