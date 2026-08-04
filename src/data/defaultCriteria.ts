@@ -13,6 +13,7 @@ export function defaultCriteria(): CriterionEntry[] {
       nextAction: '',
       status: 'unmet',
       weight: 1,
+      attachments: [],
     },
     {
       id: makeId('crit'),
@@ -24,6 +25,7 @@ export function defaultCriteria(): CriterionEntry[] {
       nextAction: '',
       status: 'unmet',
       weight: 1,
+      attachments: [],
     },
     {
       id: makeId('crit'),
@@ -35,6 +37,7 @@ export function defaultCriteria(): CriterionEntry[] {
       nextAction: '',
       status: 'unmet',
       weight: 1,
+      attachments: [],
     },
     {
       id: makeId('crit'),
@@ -46,6 +49,7 @@ export function defaultCriteria(): CriterionEntry[] {
       nextAction: '',
       status: 'unmet',
       weight: 1,
+      attachments: [],
     },
     {
       id: makeId('crit'),
@@ -57,6 +61,7 @@ export function defaultCriteria(): CriterionEntry[] {
       nextAction: '',
       status: 'unmet',
       weight: 1,
+      attachments: [],
     },
   ];
 }

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type {
   BuilderState,
+  CriterionEntry,
   DeckState,
   Folder,
   GeneratorState,
@@ -40,6 +41,8 @@ function defaultBuilder(): BuilderState {
     autosaveStatus: 'idle',
     lastSavedAt: null,
     versions: [],
+    activeTemplateId: 'lean-canvas',
+    templateValues: {},
   };
 }
 
@@ -221,37 +224,62 @@ export const useProjectStore = create<ProjectStoreState>()(
     {
       name: 'inventiondeck:projects',
       storage: createJSONStorage(() => localStorage),
-      version: 2,
-      // v1 → v2: split single Developer stage into Builder, and single
-      // Planner (biz plan + pitch deck) into separate Planner/Deck stages.
-      migrate: (persisted) => {
+      version: 3,
+      migrate: (persisted, fromVersion) => {
         const state = persisted as { projects?: Array<Record<string, unknown>> } | undefined;
         if (state?.projects) {
           state.projects = state.projects.map((p) => {
-            const oldPlanner = (p.planner as Record<string, unknown>) ?? {};
-            const builder = p.builder ?? p.developer ?? defaultBuilder();
-            const planner: PlannerState = {
-              bizPlanSections: (oldPlanner.bizPlanSections as PlannerState['bizPlanSections']) ?? [],
-              designTemplateId: (oldPlanner.designTemplateId as PlannerState['designTemplateId']) ?? 'naver-mint',
-              bizPlanGenerated: (oldPlanner.bizPlanGenerated as boolean) ?? false,
-              bizPlanProgress: (oldPlanner.bizPlanProgress as number) ?? 0,
-              lastExport:
-                (oldPlanner.lastExport as PlannerState['lastExport'] | undefined)?.type === 'pdf'
-                  ? (oldPlanner.lastExport as PlannerState['lastExport'])
-                  : null,
-            };
-            const deck: DeckState = (p.deck as DeckState) ?? {
-              pitchSlides: (oldPlanner.pitchSlides as DeckState['pitchSlides']) ?? [],
-              designTemplateId: (oldPlanner.designTemplateId as DeckState['designTemplateId']) ?? 'naver-mint',
-              pitchDeckGenerated: (oldPlanner.pitchDeckGenerated as boolean) ?? false,
-              pitchDeckProgress: (oldPlanner.pitchDeckProgress as number) ?? 0,
-              lastExport:
-                (oldPlanner.lastExport as DeckState['lastExport'] | undefined)?.type === 'ppt'
-                  ? (oldPlanner.lastExport as DeckState['lastExport'])
-                  : null,
-            };
-            const stage = p.stage === 'developer' ? 'builder' : p.stage;
-            return { ...p, builder, planner, deck, stage };
+            let next = p;
+
+            // v1 → v2: split single Developer stage into Builder, and single
+            // Planner (biz plan + pitch deck) into separate Planner/Deck stages.
+            if (fromVersion < 2) {
+              const oldPlanner = (next.planner as Record<string, unknown>) ?? {};
+              const builder = next.builder ?? next.developer ?? defaultBuilder();
+              const planner: PlannerState = {
+                bizPlanSections: (oldPlanner.bizPlanSections as PlannerState['bizPlanSections']) ?? [],
+                designTemplateId: (oldPlanner.designTemplateId as PlannerState['designTemplateId']) ?? 'naver-mint',
+                bizPlanGenerated: (oldPlanner.bizPlanGenerated as boolean) ?? false,
+                bizPlanProgress: (oldPlanner.bizPlanProgress as number) ?? 0,
+                lastExport:
+                  (oldPlanner.lastExport as PlannerState['lastExport'] | undefined)?.type === 'pdf'
+                    ? (oldPlanner.lastExport as PlannerState['lastExport'])
+                    : null,
+              };
+              const deck: DeckState = (next.deck as DeckState) ?? {
+                pitchSlides: (oldPlanner.pitchSlides as DeckState['pitchSlides']) ?? [],
+                designTemplateId: (oldPlanner.designTemplateId as DeckState['designTemplateId']) ?? 'naver-mint',
+                pitchDeckGenerated: (oldPlanner.pitchDeckGenerated as boolean) ?? false,
+                pitchDeckProgress: (oldPlanner.pitchDeckProgress as number) ?? 0,
+                lastExport:
+                  (oldPlanner.lastExport as DeckState['lastExport'] | undefined)?.type === 'ppt'
+                    ? (oldPlanner.lastExport as DeckState['lastExport'])
+                    : null,
+              };
+              const stage = next.stage === 'developer' ? 'builder' : next.stage;
+              next = { ...next, builder, planner, deck, stage };
+            }
+
+            // v2 → v3: Builder gains the 6-template worksheet, and each
+            // criterion gains an attachments list.
+            if (fromVersion < 3) {
+              const builder = (next.builder as Record<string, unknown>) ?? defaultBuilder();
+              const criteria = ((builder.criteria as CriterionEntry[]) ?? []).map((c) => ({
+                ...c,
+                attachments: c.attachments ?? [],
+              }));
+              next = {
+                ...next,
+                builder: {
+                  ...builder,
+                  criteria,
+                  activeTemplateId: builder.activeTemplateId ?? 'lean-canvas',
+                  templateValues: builder.templateValues ?? {},
+                },
+              };
+            }
+
+            return next;
           });
         }
         return state as never;

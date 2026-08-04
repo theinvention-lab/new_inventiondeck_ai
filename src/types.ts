@@ -70,6 +70,13 @@ export interface ChatMessage {
 
 export type CriterionStatus = 'unmet' | 'partial' | 'met';
 
+export interface CriterionAttachment {
+  id: string;
+  name: string;
+  dataUrl: string;
+  isImage: boolean;
+}
+
 export interface CriterionEntry {
   id: string;
   name: string;
@@ -81,6 +88,7 @@ export interface CriterionEntry {
   status: CriterionStatus;
   weight: number;
   custom?: boolean;
+  attachments: CriterionAttachment[];
 }
 
 export interface BuilderVersion {
@@ -89,6 +97,8 @@ export interface BuilderVersion {
   savedAt: string;
   savedBy: string;
 }
+
+export type BuilderTemplateId = 'lean-canvas' | 'bmc' | 'value-prop' | 'swot' | '3c' | 'stp';
 
 export interface BuilderState {
   summary: string;
@@ -103,6 +113,8 @@ export interface BuilderState {
   autosaveStatus: 'idle' | 'saving' | 'saved' | 'error';
   lastSavedAt: string | null;
   versions: BuilderVersion[];
+  activeTemplateId: BuilderTemplateId;
+  templateValues: Partial<Record<BuilderTemplateId, Record<string, string>>>;
 }
 
 export interface PlanSection {

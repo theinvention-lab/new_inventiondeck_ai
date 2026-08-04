@@ -33,6 +33,7 @@ export function PlannerPage() {
 
   const [tab, setTab] = useState<PlannerTab>('bizplan');
   const [generatingBiz, setGeneratingBiz] = useState(false);
+  const [genProgress, setGenProgress] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
 
@@ -63,9 +64,20 @@ export function PlannerPage() {
 
   const genBizPlan = () => {
     setGeneratingBiz(true);
+    setGenProgress(0);
+    const interval = window.setInterval(() => {
+      setGenProgress((v) => {
+        const next = v !== null && v < 90 ? v + Math.round(8 + Math.random() * 10) : v;
+        if (next !== null) updatePlanner(project.id, { bizPlanProgress: Math.min(next, 90) });
+        return next;
+      });
+    }, 150);
     window.setTimeout(() => {
+      window.clearInterval(interval);
       const sections = buildDefaultBizPlanSections({ generator: project.generator, builder: project.builder, title: project.title });
       updatePlanner(project.id, { bizPlanSections: sections, bizPlanGenerated: true, bizPlanProgress: 100 });
+      setGenProgress(100);
+      window.setTimeout(() => setGenProgress(null), 500);
       setGeneratingBiz(false);
       toast.push('사업계획서 초안을 생성했습니다.');
     }, 1200);
@@ -134,15 +146,23 @@ export function PlannerPage() {
 
         {tab === 'bizplan' &&
           (planner.bizPlanSections.length === 0 ? (
-            <EmptyState
-              title="아직 사업계획서 초안이 없어요"
-              description="AI가 경영진 요약부터 리스크 대응까지 8개 섹션의 목차와 초안 문장을 제안합니다."
-              action={
-                <Button onClick={genBizPlan} loading={generatingBiz}>
-                  ✨ AI로 목차 · 초안 생성하기
-                </Button>
-              }
-            />
+            <div className="flex flex-col gap-3">
+              <EmptyState
+                title="아직 사업계획서 초안이 없어요"
+                description="AI가 경영진 요약부터 리스크 대응까지 8개 섹션의 목차와 초안 문장을 제안합니다."
+                action={
+                  <Button onClick={genBizPlan} loading={generatingBiz}>
+                    ✨ AI로 목차 · 초안 생성하기
+                  </Button>
+                }
+              />
+              {genProgress !== null && (
+                <div className="mx-auto flex w-full max-w-xs items-center gap-3">
+                  <span className="shrink-0 text-[12.5px] font-semibold text-ink-strong">생성 중…</span>
+                  <ProgressBar value={genProgress} showLabel className="flex-1" />
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -159,6 +179,7 @@ export function PlannerPage() {
                   </Button>
                 </div>
               </div>
+              {genProgress !== null && <ProgressBar value={genProgress} showLabel />}
               {downloadProgress !== null && <ProgressBar value={downloadProgress} showLabel />}
               <BizPlanEditor sections={planner.bizPlanSections} onChange={patchSection} />
             </div>

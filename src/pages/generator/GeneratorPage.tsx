@@ -11,6 +11,7 @@ import { Textarea } from '../../components/ui/Textarea';
 import { Tabs } from '../../components/ui/Tabs';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
+import { ProgressBar } from '../../components/ui/ProgressBar';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useUiStore } from '../../store/uiStore';
@@ -37,8 +38,17 @@ export function GeneratorPage() {
   const [step, setStep] = useState<'select' | 'results'>('select');
   const [detailCard, setDetailCard] = useState<BizCard | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [genProgress, setGenProgress] = useState<number | null>(null);
   const [viewingIdeaId, setViewingIdeaId] = useState<string | null>(null);
   const [seedOffset, setSeedOffset] = useState(0);
+
+  const startProgressTicker = () => {
+    setGenProgress(0);
+    const interval = window.setInterval(() => {
+      setGenProgress((v) => (v !== null && v < 90 ? v + Math.round(8 + Math.random() * 10) : v));
+    }, 150);
+    return interval;
+  };
 
   const selectedCards = useMemo(
     () => (project ? getCardsByIds(project.generator.selectedCardIds) : []),
@@ -81,7 +91,9 @@ export function GeneratorPage() {
       return;
     }
     setGenerating(true);
+    const interval = startProgressTicker();
     window.setTimeout(() => {
+      window.clearInterval(interval);
       const ideas = generateIdeas({
         selectedCards,
         interest: gen.interest,
@@ -92,6 +104,8 @@ export function GeneratorPage() {
       updateGenerator(project.id, { ideas, lastGeneratedAt: new Date().toISOString(), selectedIdeaId: null });
       setViewingIdeaId(ideas[0]?.id ?? null);
       setSeedOffset((v) => v + 1);
+      setGenProgress(100);
+      window.setTimeout(() => setGenProgress(null), 500);
       setGenerating(false);
       setStep('results');
       toast.push(`아이디어 ${ideas.length}개를 생성했습니다.`);
@@ -100,7 +114,9 @@ export function GeneratorPage() {
 
   const handleRegenerate = () => {
     setGenerating(true);
+    const interval = startProgressTicker();
     window.setTimeout(() => {
+      window.clearInterval(interval);
       const ideas = generateIdeas({
         selectedCards,
         interest: gen.interest,
@@ -111,6 +127,8 @@ export function GeneratorPage() {
       updateGenerator(project.id, { ideas, selectedIdeaId: null, lastGeneratedAt: new Date().toISOString() });
       setViewingIdeaId(ideas[0]?.id ?? null);
       setSeedOffset((v) => v + 1);
+      setGenProgress(100);
+      window.setTimeout(() => setGenProgress(null), 500);
       setGenerating(false);
       toast.push('새로운 아이디어로 다시 생성했습니다.');
     }, 900);
@@ -246,6 +264,10 @@ export function GeneratorPage() {
               </Button>
             </div>
 
+            {genProgress !== null && (
+              <ProgressBar value={genProgress} showLabel className="max-w-xs" />
+            )}
+
             {viewingIdea && (
               <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
                 <div className="rounded-xl border border-hairline bg-white p-5">
@@ -312,10 +334,17 @@ export function GeneratorPage() {
 
         {step === 'select' && (
           <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-20' : 'left-64'}`}>
-            <div className="mx-auto flex max-w-6xl items-center justify-between">
-              <p className="text-[13px] text-ink-muted">
-                {canGenerate ? `${gen.selectedCardIds.length}개 카드로 아이디어를 생성할 수 있어요` : '카드를 2개 이상 선택해주세요'}
-              </p>
+            <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
+              {genProgress !== null ? (
+                <div className="flex flex-1 items-center gap-3">
+                  <span className="shrink-0 text-[13px] font-semibold text-ink-strong">AI가 아이디어를 만드는 중…</span>
+                  <ProgressBar value={genProgress} showLabel className="max-w-xs flex-1" />
+                </div>
+              ) : (
+                <p className="text-[13px] text-ink-muted">
+                  {canGenerate ? `${gen.selectedCardIds.length}개 카드로 아이디어를 생성할 수 있어요` : '카드를 2개 이상 선택해주세요'}
+                </p>
+              )}
               <Button size="lg" onClick={handleGenerate} loading={generating} disabled={!canGenerate}>
                 ✨ AI 아이디어 생성하기
               </Button>

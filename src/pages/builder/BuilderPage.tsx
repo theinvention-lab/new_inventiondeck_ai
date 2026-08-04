@@ -9,6 +9,8 @@ import { Dialog } from '../../components/ui/Dialog';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { ChatPanel } from '../../components/builder/ChatPanel';
 import { CriterionCard } from '../../components/builder/CriterionCard';
+import { TemplateSelector } from '../../components/builder/TemplateSelector';
+import { TemplateFieldsForm } from '../../components/builder/TemplateFieldsForm';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useUiStore } from '../../store/uiStore';
@@ -16,9 +18,11 @@ import { useToast } from '../../components/ui/Toast';
 import { openingMessage, generateAiReply } from '../../ai/chatEngine';
 import { makeId } from '../../lib/id';
 import { relativeTime, formatDateTime } from '../../lib/format';
-import type { CriterionEntry } from '../../types';
+import { getBuilderTemplate } from '../../data/builderTemplates';
+import type { CriterionEntry, BuilderTemplateId } from '../../types';
 
 const AUTOSAVE_DELAY = 1000;
+const SIMULATED_FAILURE_RATE = 0.12;
 
 export function BuilderPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -32,10 +36,11 @@ export function BuilderPage() {
   const updateBuilder = useProjectStore((s) => s.updateBuilder);
   const updateProject = useProjectStore((s) => s.updateProject);
 
-  const [tab, setTab] = useState<'start' | 'chat' | 'criteria'>('start');
+  const [tab, setTab] = useState<'start' | 'template' | 'chat' | 'criteria'>('start');
   const [thinking, setThinking] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [newCriterionName, setNewCriterionName] = useState('');
+  const [draggedCriterionId, setDraggedCriterionId] = useState<string | null>(null);
 
   const saveTimer = useRef<number | null>(null);
   const dirtyRef = useRef(false);
@@ -47,6 +52,10 @@ export function BuilderPage() {
     updateBuilder(project.id, { autosaveStatus: 'saving' });
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
+      if (Math.random() < SIMULATED_FAILURE_RATE) {
+        updateBuilder(project.id, { autosaveStatus: 'error' });
+        return;
+      }
       updateBuilder(project.id, { autosaveStatus: 'saved', lastSavedAt: new Date().toISOString() });
       dirtyRef.current = false;
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,6 +73,7 @@ export function BuilderPage() {
     builder?.assumptions,
     builder?.currentConcerns,
     builder?.criteria,
+    builder?.templateValues,
   ]);
 
   const criteriaProgress = useMemo(() => {
@@ -88,15 +98,24 @@ export function BuilderPage() {
   };
 
   const handleManualSave = () => {
-    updateBuilder(project.id, {
-      autosaveStatus: 'saved',
-      lastSavedAt: new Date().toISOString(),
-      versions: [
-        { id: makeId('bver'), label: `버전 ${builder.versions.length + 1}`, savedAt: new Date().toISOString(), savedBy: currentUser?.name ?? '나' },
-        ...builder.versions,
-      ],
-    });
-    toast.push('저장되었습니다.');
+    updateBuilder(project.id, { autosaveStatus: 'saving' });
+    window.setTimeout(() => {
+      if (Math.random() < SIMULATED_FAILURE_RATE) {
+        updateBuilder(project.id, { autosaveStatus: 'error' });
+        toast.push('저장에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요.', 'error');
+        return;
+      }
+      updateBuilder(project.id, {
+        autosaveStatus: 'saved',
+        lastSavedAt: new Date().toISOString(),
+        versions: [
+          { id: makeId('bver'), label: `버전 ${builder.versions.length + 1}`, savedAt: new Date().toISOString(), savedBy: currentUser?.name ?? '나' },
+          ...builder.versions,
+        ],
+      });
+      dirtyRef.current = false;
+      toast.push('저장되었습니다.');
+    }, 500);
   };
 
   const startChat = () => {
@@ -133,6 +152,7 @@ export function BuilderPage() {
       status: 'unmet',
       weight: 1,
       custom: true,
+      attachments: [],
     };
     markDirty({ criteria: [...builder.criteria, criterion] });
     setNewCriterionName('');
@@ -140,6 +160,39 @@ export function BuilderPage() {
 
   const removeCriterion = (id: string) => {
     markDirty({ criteria: builder.criteria.filter((c) => c.id !== id) });
+  };
+
+  const reorderCriteria = (targetId: string) => {
+    if (!draggedCriterionId || draggedCriterionId === targetId) return;
+    const list = [...builder.criteria];
+    const fromIdx = list.findIndex((c) => c.id === draggedCriterionId);
+    const toIdx = list.findIndex((c) => c.id === targetId);
+    if (fromIdx === -1 || toIdx === -1) return;
+    const [moved] = list.splice(fromIdx, 1);
+    list.splice(toIdx, 0, moved);
+    markDirty({ criteria: list });
+  };
+
+  const activeTemplate = getBuilderTemplate(builder.activeTemplateId);
+  const activeTemplateValues = builder.templateValues[builder.activeTemplateId] ?? {};
+
+  const selectTemplate = (id: BuilderTemplateId) => {
+    updateBuilder(project.id, { activeTemplateId: id });
+  };
+
+  const updateTemplateField = (fieldId: string, value: string) => {
+    dirtyRef.current = true;
+    updateBuilder(project.id, {
+      templateValues: {
+        ...builder.templateValues,
+        [builder.activeTemplateId]: { ...activeTemplateValues, [fieldId]: value },
+      },
+    });
+  };
+
+  const filledCount = (id: BuilderTemplateId) => {
+    const values = builder.templateValues[id] ?? {};
+    return Object.values(values).filter((v) => v && v.trim().length > 0).length;
   };
 
   const importFromIdea = (ideaId: string) => {
@@ -181,22 +234,41 @@ export function BuilderPage() {
           </div>
           <div className="flex items-center gap-2">
             {autosaveLabel && (
-              <span className={`text-[12px] ${builder.autosaveStatus === 'saving' ? 'text-ink-faint' : 'text-brand-strong'}`}>
+              <span
+                className={`text-[12px] ${
+                  builder.autosaveStatus === 'saving'
+                    ? 'text-ink-faint'
+                    : builder.autosaveStatus === 'error'
+                      ? 'text-danger'
+                      : 'text-brand-strong'
+                }`}
+              >
                 {builder.autosaveStatus === 'saving' && '● '}
                 {autosaveLabel}
               </span>
             )}
-            <Button variant="outline" size="sm" onClick={handleManualSave}>
+            <Button variant="outline" size="sm" onClick={handleManualSave} loading={builder.autosaveStatus === 'saving'}>
               지금 저장
             </Button>
           </div>
         </div>
 
+        {builder.autosaveStatus === 'error' && (
+          <div className="mb-5 flex items-center gap-2 rounded-xl border border-danger/40 bg-danger-soft px-4 py-3 text-[13px] text-danger">
+            <span>⚠️</span>
+            <p className="flex-1">저장 중 네트워크 오류가 발생했습니다. 변경사항은 남아 있어요 — 다시 시도해주세요.</p>
+            <Button size="sm" variant="danger" onClick={handleManualSave}>
+              다시 시도
+            </Button>
+          </div>
+        )}
+
         <Tabs
           items={[
             { id: 'start', label: '① 시작 정보' },
-            { id: 'chat', label: '② AI 채팅 고도화', badge: builder.chatMessages.filter((m) => m.role === 'user').length },
-            { id: 'criteria', label: '③ 점검 기준' },
+            { id: 'template', label: '② 구체화 템플릿' },
+            { id: 'chat', label: '③ AI 채팅 고도화', badge: builder.chatMessages.filter((m) => m.role === 'user').length },
+            { id: 'criteria', label: '④ 점검 기준' },
           ]}
           activeId={tab}
           onChange={(id) => setTab(id as typeof tab)}
@@ -238,6 +310,16 @@ export function BuilderPage() {
           </div>
         )}
 
+        {tab === 'template' && (
+          <div className="flex flex-col gap-4">
+            <p className="text-[13px] text-ink-muted">
+              사업 특성에 맞는 구체화 템플릿을 선택하고, 항목별로 작성해보세요. 템플릿을 바꿔도 이전에 작성한 내용은 유지됩니다.
+            </p>
+            <TemplateSelector activeId={builder.activeTemplateId} onSelect={selectTemplate} filledCount={filledCount} />
+            <TemplateFieldsForm template={activeTemplate} values={activeTemplateValues} onChange={updateTemplateField} />
+          </div>
+        )}
+
         {tab === 'chat' && (
           <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
         )}
@@ -263,6 +345,12 @@ export function BuilderPage() {
                 criterion={c}
                 onChange={(patch) => patchCriterion(c.id, patch)}
                 onRemove={c.custom ? () => removeCriterion(c.id) : undefined}
+                draggable
+                dragging={draggedCriterionId === c.id}
+                onDragStart={() => setDraggedCriterionId(c.id)}
+                onDragOver={() => reorderCriteria(c.id)}
+                onDrop={() => setDraggedCriterionId(null)}
+                onDragEnd={() => setDraggedCriterionId(null)}
               />
             ))}
 

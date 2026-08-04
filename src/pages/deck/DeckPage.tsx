@@ -32,6 +32,7 @@ export function DeckPage() {
 
   const [tab, setTab] = useState<DeckTab>('slides');
   const [generatingPitch, setGeneratingPitch] = useState(false);
+  const [genProgress, setGenProgress] = useState<number | null>(null);
   const [activeSlideId, setActiveSlideId] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
@@ -62,10 +63,21 @@ export function DeckPage() {
 
   const genPitchDeck = () => {
     setGeneratingPitch(true);
+    setGenProgress(0);
+    const interval = window.setInterval(() => {
+      setGenProgress((v) => {
+        const next = v !== null && v < 90 ? v + Math.round(8 + Math.random() * 10) : v;
+        if (next !== null) updateDeck(project.id, { pitchDeckProgress: Math.min(next, 90) });
+        return next;
+      });
+    }, 150);
     window.setTimeout(() => {
+      window.clearInterval(interval);
       const slides = buildDefaultPitchSlides({ generator: project.generator, builder: project.builder, title: project.title });
       updateDeck(project.id, { pitchSlides: slides, pitchDeckGenerated: true, pitchDeckProgress: 100 });
       setActiveSlideId(slides[0]?.id ?? null);
+      setGenProgress(100);
+      window.setTimeout(() => setGenProgress(null), 500);
       setGeneratingPitch(false);
       toast.push('IR Deck 초안을 생성했습니다.');
     }, 1200);
@@ -141,15 +153,23 @@ export function DeckPage() {
 
         {tab === 'slides' &&
           (deck.pitchSlides.length === 0 ? (
-            <EmptyState
-              title="아직 IR Deck 초안이 없어요"
-              description="표지부터 Ask(투자 요청)까지 10개 슬라이드의 메시지 흐름을 제안합니다."
-              action={
-                <Button onClick={genPitchDeck} loading={generatingPitch}>
-                  ✨ AI로 슬라이드 생성하기
-                </Button>
-              }
-            />
+            <div className="flex flex-col gap-3">
+              <EmptyState
+                title="아직 IR Deck 초안이 없어요"
+                description="표지부터 Ask(투자 요청)까지 10개 슬라이드의 메시지 흐름을 제안합니다."
+                action={
+                  <Button onClick={genPitchDeck} loading={generatingPitch}>
+                    ✨ AI로 슬라이드 생성하기
+                  </Button>
+                }
+              />
+              {genProgress !== null && (
+                <div className="mx-auto flex w-full max-w-xs items-center gap-3">
+                  <span className="shrink-0 text-[12.5px] font-semibold text-ink-strong">생성 중…</span>
+                  <ProgressBar value={genProgress} showLabel className="flex-1" />
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -166,6 +186,7 @@ export function DeckPage() {
                   </Button>
                 </div>
               </div>
+              {genProgress !== null && <ProgressBar value={genProgress} showLabel />}
               {downloadProgress !== null && <ProgressBar value={downloadProgress} showLabel />}
 
               <div className="grid gap-4 lg:grid-cols-[200px_1fr]">
