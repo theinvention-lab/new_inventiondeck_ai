@@ -4,25 +4,37 @@ import { MODE_COPY } from '../../ai/homeChatEngine';
 const MODES: ChatMode[] = ['generator', 'builder', 'planner'];
 
 export function ChatModeButtons({ active, onSelect }: { active: ChatMode; onSelect: (mode: ChatMode) => void }) {
+  const activeIndex = MODES.indexOf(active);
+  const activeCopy = MODE_COPY[active];
+
   return (
-    <div className="flex flex-wrap justify-center gap-3">
-      {MODES.map((mode) => {
-        const copy = MODE_COPY[mode];
-        const isActive = mode === active;
-        return (
-          <button
-            key={mode}
-            onClick={() => onSelect(mode)}
-            className={`flex items-center gap-2 rounded-full border px-5 py-2.5 text-[14px] font-bold transition-colors ${
-              isActive ? 'border-transparent text-white' : 'border-hairline-strong bg-white text-ink-muted hover:bg-canvas-sunken'
-            }`}
-            style={isActive ? { backgroundColor: copy.accent } : undefined}
-          >
-            <span>{copy.icon}</span>
-            {copy.label}
-          </button>
-        );
-      })}
+    <div className="mx-auto w-full max-w-md">
+      <div className="relative flex rounded-full bg-canvas-sunken p-1">
+        <div
+          className="absolute top-1 bottom-1 left-1 rounded-full shadow-sm transition-transform duration-300 ease-out"
+          style={{
+            width: `calc((100% - 8px) / ${MODES.length})`,
+            transform: `translateX(${activeIndex * 100}%)`,
+            backgroundColor: activeCopy.accent,
+          }}
+        />
+        {MODES.map((mode) => {
+          const copy = MODE_COPY[mode];
+          const isActive = mode === active;
+          return (
+            <button
+              key={mode}
+              onClick={() => onSelect(mode)}
+              className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-[14px] font-bold transition-colors duration-300 ${
+                isActive ? 'text-white' : 'text-ink-muted hover:text-ink-strong'
+              }`}
+            >
+              <span>{copy.icon}</span>
+              {copy.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

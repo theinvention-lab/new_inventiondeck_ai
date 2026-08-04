@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
@@ -15,10 +15,8 @@ const NAV_ITEMS = [
 ];
 
 export function Sidebar() {
-  const navigate = useNavigate();
   const location = useLocation();
   const currentUser = useAuthStore((s) => s.currentUser());
-  const logout = useAuthStore((s) => s.logout);
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
 
@@ -43,8 +41,8 @@ export function Sidebar() {
           <Link
             key={item.label}
             to={item.to}
-            className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13.5px] font-semibold transition-colors ${
-              collapsed ? 'justify-center' : ''
+            className={`flex items-center rounded-lg text-[13.5px] font-semibold transition-colors ${
+              collapsed ? 'flex-col justify-center gap-1 px-1 py-2.5' : 'gap-2.5 px-3 py-2.5'
             } ${
               item.match(location.pathname, location.search)
                 ? 'bg-brand-soft text-brand-strong'
@@ -52,7 +50,7 @@ export function Sidebar() {
             }`}
           >
             <span className="text-[16px]">{item.icon}</span>
-            {!collapsed && item.label}
+            <span className={collapsed ? 'whitespace-nowrap text-[9px] font-semibold leading-none' : ''}>{item.label}</span>
           </Link>
         ))}
       </nav>
@@ -69,20 +67,11 @@ export function Sidebar() {
             </div>
           )}
         </div>
-        <button
-          onClick={() => {
-            logout();
-            navigate('/login');
-          }}
-          className={`text-[11px] font-medium text-ink-faint hover:text-danger ${collapsed ? 'text-center' : 'pl-10 text-left'}`}
-        >
-          로그아웃
-        </button>
       </div>
 
       <button
         onClick={toggleSidebar}
-        className="absolute top-[68px] -right-3 flex h-6 w-6 items-center justify-center rounded-full border border-hairline-strong bg-white text-[11px] text-ink-muted shadow-sm hover:bg-canvas-sunken"
+        className="absolute top-1/2 -right-3 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full border border-hairline-strong bg-white text-[11px] text-ink-muted shadow-sm hover:bg-canvas-sunken"
         aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
       >
         {collapsed ? '›' : '‹'}

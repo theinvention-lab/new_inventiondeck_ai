@@ -1,15 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { ChatModeButtons } from '../../components/home/ChatModeButtons';
 import { HomeChatPanel } from '../../components/home/HomeChatPanel';
-import { MyProjectsPanel } from '../../components/home/MyProjectsPanel';
-import { MyNotesPanel } from '../../components/home/MyNotesPanel';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useNoteStore } from '../../store/noteStore';
-import { useToast } from '../../components/ui/Toast';
-import type { ChatMessage, Note, Project } from '../../types';
+import type { ChatMessage, Project } from '../../types';
 import type { ChatMode } from '../../ai/homeChatEngine';
 import { openingMessage, replyFor } from '../../ai/homeChatEngine';
 import { makeId } from '../../lib/id';
@@ -22,7 +19,6 @@ function isChatMode(value: string | null): value is ChatMode {
 
 export function HomePage() {
   const navigate = useNavigate();
-  const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const currentUser = useAuthStore((s) => s.currentUser());
   const email = currentUser?.email ?? '';
@@ -33,8 +29,6 @@ export function HomePage() {
   const updateBuilder = useProjectStore((s) => s.updateBuilder);
 
   const notes = useNoteStore((s) => s.notes);
-  const createNote = useNoteStore((s) => s.createNote);
-  const deleteNote = useNoteStore((s) => s.deleteNote);
 
   const paramMode = searchParams.get('mode');
   const [mode, setMode] = useState<ChatMode>(isChatMode(paramMode) ? paramMode : 'generator');
@@ -52,22 +46,6 @@ export function HomePage() {
     planner: [openingMessage('planner')],
   }));
   const [thinking, setThinking] = useState(false);
-
-  const active = useMemo(
-    () =>
-      projects
-        .filter((p) => p.ownerEmail === email && !p.trashedAt)
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
-    [projects, email],
-  );
-
-  const myNotes = useMemo(
-    () =>
-      notes
-        .filter((n) => n.ownerEmail === email)
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
-    [notes, email],
-  );
 
   const selectMode = (next: ChatMode) => {
     setMode(next);
@@ -88,7 +66,26 @@ export function HomePage() {
     }, 700 + Math.random() * 400);
   };
 
+  // A note sent from the right-sidebar "내 메모" panel arrives as ?noteId=,
+  // gets dropped into the Generator chat once, then the param is cleared.
+  useEffect(() => {
+    const noteId = searchParams.get('noteId');
+    if (!noteId) return;
+    const note = notes.find((n) => n.id === noteId);
+    if (note) {
+      setMode('generator');
+      sendChat('generator', note.content.trim() || note.title);
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete('noteId');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, notes]);
+
   const resumeOrCreateProject = (): Project => {
+    const active = projects
+      .filter((p) => p.ownerEmail === email && !p.trashedAt)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     const inProgress = active.find((p) => p.stage !== 'completed');
     if (inProgress) return inProgress;
     if (active.length > 0) return active[0];
@@ -119,22 +116,6 @@ export function HomePage() {
     }
   };
 
-  const handleCreateNote = (title: string, content: string) => {
-    createNote(email, title, content);
-    toast.push('메모를 저장했어요.');
-  };
-
-  const handleSendNoteToGenerator = (note: Note) => {
-    selectMode('generator');
-    sendChat('generator', note.content.trim() || note.title);
-    toast.push('메모를 Generator 채팅으로 보냈어요.');
-  };
-
-  const handleCreateProject = () => {
-    const project = createProject(email, '새로운 프로젝트');
-    navigate(`/project/${project.id}/generator`);
-  };
-
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl px-5 py-10">
@@ -154,27 +135,6 @@ export function HomePage() {
             onSend={(text) => sendChat(mode, text)}
             onCta={() => handleCta(mode)}
           />
-        </div>
-
-        <div className="mt-10 rounded-3xl bg-brand-soft/50 p-6 sm:p-8">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:divide-x md:divide-hairline">
-            <div className="md:pr-8">
-              <MyProjectsPanel
-                projects={active}
-                onOpen={(p) => navigate(`/project/${p.id}/${p.stage === 'completed' ? 'planner' : p.stage}`)}
-                onCreate={handleCreateProject}
-                onViewAll={() => navigate('/mypage')}
-              />
-            </div>
-            <div className="md:pl-8">
-              <MyNotesPanel
-                notes={myNotes}
-                onCreate={handleCreateNote}
-                onDelete={deleteNote}
-                onSendToGenerator={handleSendNoteToGenerator}
-              />
-            </div>
-          </div>
         </div>
       </div>
     </AppShell>
