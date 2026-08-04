@@ -18,7 +18,7 @@ export function LoginPage() {
   const location = useLocation();
   const toast = useToast();
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/mypage';
+  const from = (location.state as { from?: string } | null)?.from ?? '/home';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -11,7 +11,7 @@ export function SocialButtons() {
     const result = socialLogin(provider);
     if (result.ok) {
       toast.push(`${provider === 'google' ? 'Google' : 'Kakao'} 계정으로 로그인했습니다.`);
-      navigate('/mypage');
+      navigate('/home');
     }
   };
 

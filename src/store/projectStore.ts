@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type {
-  DeveloperState,
+  BuilderState,
+  DeckState,
   Folder,
   GeneratorState,
   PlannerState,
@@ -25,7 +26,7 @@ function defaultGenerator(): GeneratorState {
   };
 }
 
-function defaultDeveloper(): DeveloperState {
+function defaultBuilder(): BuilderState {
   return {
     summary: '',
     targetCustomer: '',
@@ -45,11 +46,18 @@ function defaultDeveloper(): DeveloperState {
 function defaultPlanner(): PlannerState {
   return {
     bizPlanSections: [],
-    pitchSlides: [],
     designTemplateId: 'naver-mint',
     bizPlanGenerated: false,
-    pitchDeckGenerated: false,
     bizPlanProgress: 0,
+    lastExport: null,
+  };
+}
+
+function defaultDeck(): DeckState {
+  return {
+    pitchSlides: [],
+    designTemplateId: 'naver-mint',
+    pitchDeckGenerated: false,
     pitchDeckProgress: 0,
     lastExport: null,
   };
@@ -69,8 +77,9 @@ export function createEmptyProject(ownerEmail: string, title: string): Project {
     tags: [],
     trashedAt: null,
     generator: defaultGenerator(),
-    developer: defaultDeveloper(),
+    builder: defaultBuilder(),
     planner: defaultPlanner(),
+    deck: defaultDeck(),
   };
 }
 
@@ -82,8 +91,9 @@ interface ProjectStoreState {
   getProject: (id: string) => Project | undefined;
   updateProject: (id: string, patch: Partial<Project>) => void;
   updateGenerator: (id: string, patch: Partial<GeneratorState>) => void;
-  updateDeveloper: (id: string, patch: Partial<DeveloperState>) => void;
+  updateBuilder: (id: string, patch: Partial<BuilderState>) => void;
   updatePlanner: (id: string, patch: Partial<PlannerState>) => void;
+  updateDeck: (id: string, patch: Partial<DeckState>) => void;
 
   softDeleteProject: (id: string) => void;
   restoreProject: (id: string) => void;
@@ -129,10 +139,10 @@ export const useProjectStore = create<ProjectStoreState>()(
         }));
       },
 
-      updateDeveloper: (id, patch) => {
+      updateBuilder: (id, patch) => {
         set((s) => ({
           projects: s.projects.map((p) =>
-            p.id === id ? { ...p, developer: { ...p.developer, ...patch }, updatedAt: new Date().toISOString() } : p,
+            p.id === id ? { ...p, builder: { ...p.builder, ...patch }, updatedAt: new Date().toISOString() } : p,
           ),
         }));
       },
@@ -141,6 +151,14 @@ export const useProjectStore = create<ProjectStoreState>()(
         set((s) => ({
           projects: s.projects.map((p) =>
             p.id === id ? { ...p, planner: { ...p.planner, ...patch }, updatedAt: new Date().toISOString() } : p,
+          ),
+        }));
+      },
+
+      updateDeck: (id, patch) => {
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id ? { ...p, deck: { ...p.deck, ...patch }, updatedAt: new Date().toISOString() } : p,
           ),
         }));
       },
@@ -203,6 +221,41 @@ export const useProjectStore = create<ProjectStoreState>()(
     {
       name: 'inventiondeck:projects',
       storage: createJSONStorage(() => localStorage),
+      version: 2,
+      // v1 → v2: split single Developer stage into Builder, and single
+      // Planner (biz plan + pitch deck) into separate Planner/Deck stages.
+      migrate: (persisted) => {
+        const state = persisted as { projects?: Array<Record<string, unknown>> } | undefined;
+        if (state?.projects) {
+          state.projects = state.projects.map((p) => {
+            const oldPlanner = (p.planner as Record<string, unknown>) ?? {};
+            const builder = p.builder ?? p.developer ?? defaultBuilder();
+            const planner: PlannerState = {
+              bizPlanSections: (oldPlanner.bizPlanSections as PlannerState['bizPlanSections']) ?? [],
+              designTemplateId: (oldPlanner.designTemplateId as PlannerState['designTemplateId']) ?? 'naver-mint',
+              bizPlanGenerated: (oldPlanner.bizPlanGenerated as boolean) ?? false,
+              bizPlanProgress: (oldPlanner.bizPlanProgress as number) ?? 0,
+              lastExport:
+                (oldPlanner.lastExport as PlannerState['lastExport'] | undefined)?.type === 'pdf'
+                  ? (oldPlanner.lastExport as PlannerState['lastExport'])
+                  : null,
+            };
+            const deck: DeckState = (p.deck as DeckState) ?? {
+              pitchSlides: (oldPlanner.pitchSlides as DeckState['pitchSlides']) ?? [],
+              designTemplateId: (oldPlanner.designTemplateId as DeckState['designTemplateId']) ?? 'naver-mint',
+              pitchDeckGenerated: (oldPlanner.pitchDeckGenerated as boolean) ?? false,
+              pitchDeckProgress: (oldPlanner.pitchDeckProgress as number) ?? 0,
+              lastExport:
+                (oldPlanner.lastExport as DeckState['lastExport'] | undefined)?.type === 'ppt'
+                  ? (oldPlanner.lastExport as DeckState['lastExport'])
+                  : null,
+            };
+            const stage = p.stage === 'developer' ? 'builder' : p.stage;
+            return { ...p, builder, planner, deck, stage };
+          });
+        }
+        return state as never;
+      },
     },
   ),
 );
@@ -211,8 +264,8 @@ export function projectProgress(project: Project): number {
   let score = 0;
   const total = 4;
   if (project.generator.ideas.length > 0) score += 1;
-  if (project.developer.criteria.some((c) => c.status !== 'unmet')) score += 1;
+  if (project.builder.criteria.some((c) => c.status !== 'unmet')) score += 1;
   if (project.planner.bizPlanGenerated) score += 1;
-  if (project.planner.pitchDeckGenerated) score += 1;
+  if (project.deck.pitchDeckGenerated) score += 1;
   return Math.round((score / total) * 100);
 }

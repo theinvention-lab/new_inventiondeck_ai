@@ -83,14 +83,14 @@ export interface CriterionEntry {
   custom?: boolean;
 }
 
-export interface DeveloperVersion {
+export interface BuilderVersion {
   id: string;
   label: string;
   savedAt: string;
   savedBy: string;
 }
 
-export interface DeveloperState {
+export interface BuilderState {
   summary: string;
   targetCustomer: string;
   userProblem: string;
@@ -102,7 +102,7 @@ export interface DeveloperState {
   criteria: CriterionEntry[];
   autosaveStatus: 'idle' | 'saving' | 'saved' | 'error';
   lastSavedAt: string | null;
-  versions: DeveloperVersion[];
+  versions: BuilderVersion[];
 }
 
 export interface PlanSection {
@@ -126,16 +126,21 @@ export type DesignTemplateId = 'naver-mint' | 'ink-mono' | 'sunrise' | 'slate-pr
 
 export interface PlannerState {
   bizPlanSections: PlanSection[];
-  pitchSlides: PitchSlide[];
   designTemplateId: DesignTemplateId;
   bizPlanGenerated: boolean;
-  pitchDeckGenerated: boolean;
   bizPlanProgress: number;
-  pitchDeckProgress: number;
-  lastExport: { type: 'pdf' | 'ppt'; at: string; filename: string } | null;
+  lastExport: { type: 'pdf'; at: string; filename: string } | null;
 }
 
-export type ProjectStage = 'generator' | 'developer' | 'planner' | 'completed';
+export interface DeckState {
+  pitchSlides: PitchSlide[];
+  designTemplateId: DesignTemplateId;
+  pitchDeckGenerated: boolean;
+  pitchDeckProgress: number;
+  lastExport: { type: 'ppt'; at: string; filename: string } | null;
+}
+
+export type ProjectStage = 'generator' | 'builder' | 'planner' | 'deck' | 'completed';
 
 export interface Project {
   id: string;
@@ -149,8 +154,9 @@ export interface Project {
   tags: string[];
   trashedAt: string | null;
   generator: GeneratorState;
-  developer: DeveloperState;
+  builder: BuilderState;
   planner: PlannerState;
+  deck: DeckState;
 }
 
 export interface Folder {

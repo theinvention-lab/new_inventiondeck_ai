@@ -7,16 +7,18 @@ import { projectProgress } from '../../store/projectStore';
 
 const STAGE_LABEL: Record<Project['stage'], string> = {
   generator: 'Generator 진행중',
-  developer: 'Developer 진행중',
+  builder: 'Builder 진행중',
   planner: 'Planner 진행중',
+  deck: 'Deck 진행중',
   completed: '완료',
 };
 
 const STAGE_PATH: Record<Project['stage'], string> = {
   generator: 'generator',
-  developer: 'developer',
+  builder: 'builder',
   planner: 'planner',
-  completed: 'planner',
+  deck: 'deck',
+  completed: 'deck',
 };
 
 export function ProjectCard({
@@ -62,9 +64,9 @@ export function ProjectCard({
         <span>수정 {relativeTime(project.updatedAt)}</span>
         <div className="flex items-center gap-1">
           <span title="Generator">{project.generator.ideas.length > 0 ? '✅' : '▫️'}</span>
-          <span title="Developer">{project.developer.criteria.some((c) => c.status !== 'unmet') ? '✅' : '▫️'}</span>
+          <span title="Builder">{project.builder.criteria.some((c) => c.status !== 'unmet') ? '✅' : '▫️'}</span>
           <span title="사업계획서">{project.planner.bizPlanGenerated ? '✅' : '▫️'}</span>
-          <span title="IR Deck">{project.planner.pitchDeckGenerated ? '✅' : '▫️'}</span>
+          <span title="IR Deck">{project.deck.pitchDeckGenerated ? '✅' : '▫️'}</span>
         </div>
       </div>
 

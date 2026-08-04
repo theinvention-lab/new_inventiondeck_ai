@@ -7,10 +7,11 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Dialog } from '../../components/ui/Dialog';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { ChatPanel } from '../../components/developer/ChatPanel';
-import { CriterionCard } from '../../components/developer/CriterionCard';
+import { ChatPanel } from '../../components/builder/ChatPanel';
+import { CriterionCard } from '../../components/builder/CriterionCard';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
+import { useUiStore } from '../../store/uiStore';
 import { useToast } from '../../components/ui/Toast';
 import { openingMessage, generateAiReply } from '../../ai/chatEngine';
 import { makeId } from '../../lib/id';
@@ -19,15 +20,16 @@ import type { CriterionEntry } from '../../types';
 
 const AUTOSAVE_DELAY = 1000;
 
-export function DeveloperPage() {
+export function BuilderPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const toast = useToast();
   const currentEmail = useAuthStore((s) => s.currentEmail);
   const currentUser = useAuthStore((s) => s.currentUser());
+  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
 
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
-  const updateDeveloper = useProjectStore((s) => s.updateDeveloper);
+  const updateBuilder = useProjectStore((s) => s.updateBuilder);
   const updateProject = useProjectStore((s) => s.updateProject);
 
   const [tab, setTab] = useState<'start' | 'chat' | 'criteria'>('start');
@@ -38,14 +40,14 @@ export function DeveloperPage() {
   const saveTimer = useRef<number | null>(null);
   const dirtyRef = useRef(false);
 
-  const dev = project?.developer;
+  const builder = project?.builder;
 
   useEffect(() => {
     if (!project || !dirtyRef.current) return;
-    updateDeveloper(project.id, { autosaveStatus: 'saving' });
+    updateBuilder(project.id, { autosaveStatus: 'saving' });
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => {
-      updateDeveloper(project.id, { autosaveStatus: 'saved', lastSavedAt: new Date().toISOString() });
+      updateBuilder(project.id, { autosaveStatus: 'saved', lastSavedAt: new Date().toISOString() });
       dirtyRef.current = false;
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, AUTOSAVE_DELAY);
@@ -54,23 +56,23 @@ export function DeveloperPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    dev?.summary,
-    dev?.targetCustomer,
-    dev?.userProblem,
-    dev?.solution,
-    dev?.evidence,
-    dev?.assumptions,
-    dev?.currentConcerns,
-    dev?.criteria,
+    builder?.summary,
+    builder?.targetCustomer,
+    builder?.userProblem,
+    builder?.solution,
+    builder?.evidence,
+    builder?.assumptions,
+    builder?.currentConcerns,
+    builder?.criteria,
   ]);
 
   const criteriaProgress = useMemo(() => {
-    if (!dev) return 0;
-    const met = dev.criteria.filter((c) => c.status === 'met').length;
-    return dev.criteria.length ? Math.round((met / dev.criteria.length) * 100) : 0;
-  }, [dev]);
+    if (!builder) return 0;
+    const met = builder.criteria.filter((c) => c.status === 'met').length;
+    return builder.criteria.length ? Math.round((met / builder.criteria.length) * 100) : 0;
+  }, [builder]);
 
-  if (!project || !dev || project.ownerEmail !== currentEmail) {
+  if (!project || !builder || project.ownerEmail !== currentEmail) {
     return (
       <AppShell>
         <div className="flex min-h-screen items-center justify-center">
@@ -80,42 +82,42 @@ export function DeveloperPage() {
     );
   }
 
-  const markDirty = (patch: Partial<typeof dev>) => {
+  const markDirty = (patch: Partial<typeof builder>) => {
     dirtyRef.current = true;
-    updateDeveloper(project.id, patch);
+    updateBuilder(project.id, patch);
   };
 
   const handleManualSave = () => {
-    updateDeveloper(project.id, {
+    updateBuilder(project.id, {
       autosaveStatus: 'saved',
       lastSavedAt: new Date().toISOString(),
       versions: [
-        { id: makeId('devver'), label: `버전 ${dev.versions.length + 1}`, savedAt: new Date().toISOString(), savedBy: currentUser?.name ?? '나' },
-        ...dev.versions,
+        { id: makeId('bver'), label: `버전 ${builder.versions.length + 1}`, savedAt: new Date().toISOString(), savedBy: currentUser?.name ?? '나' },
+        ...builder.versions,
       ],
     });
     toast.push('저장되었습니다.');
   };
 
   const startChat = () => {
-    const msg = openingMessage(dev);
-    updateDeveloper(project.id, { chatMessages: [msg] });
+    const msg = openingMessage(builder);
+    updateBuilder(project.id, { chatMessages: [msg] });
   };
 
   const sendChat = (text: string) => {
     const userMsg = { id: makeId('msg'), role: 'user' as const, content: text, createdAt: new Date().toISOString() };
-    const nextMessages = [...dev.chatMessages, userMsg];
-    updateDeveloper(project.id, { chatMessages: nextMessages });
+    const nextMessages = [...builder.chatMessages, userMsg];
+    updateBuilder(project.id, { chatMessages: nextMessages });
     setThinking(true);
     window.setTimeout(() => {
-      const reply = generateAiReply(dev, text);
-      updateDeveloper(project.id, { chatMessages: [...nextMessages, reply] });
+      const reply = generateAiReply(builder, text);
+      updateBuilder(project.id, { chatMessages: [...nextMessages, reply] });
       setThinking(false);
     }, 800 + Math.random() * 500);
   };
 
   const patchCriterion = (id: string, patch: Partial<CriterionEntry>) => {
-    markDirty({ criteria: dev.criteria.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
+    markDirty({ criteria: builder.criteria.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
   };
 
   const addCriterion = () => {
@@ -132,12 +134,12 @@ export function DeveloperPage() {
       weight: 1,
       custom: true,
     };
-    markDirty({ criteria: [...dev.criteria, criterion] });
+    markDirty({ criteria: [...builder.criteria, criterion] });
     setNewCriterionName('');
   };
 
   const removeCriterion = (id: string) => {
-    markDirty({ criteria: dev.criteria.filter((c) => c.id !== id) });
+    markDirty({ criteria: builder.criteria.filter((c) => c.id !== id) });
   };
 
   const importFromIdea = (ideaId: string) => {
@@ -154,7 +156,7 @@ export function DeveloperPage() {
   };
 
   const sendToPlanner = () => {
-    if (project.stage === 'developer') {
+    if (project.stage === 'builder') {
       updateProject(project.id, { stage: 'planner' });
     }
     toast.push('Planner로 전달했습니다.');
@@ -164,23 +166,23 @@ export function DeveloperPage() {
   const autosaveLabel = {
     idle: '',
     saving: '저장 중…',
-    saved: dev.lastSavedAt ? `${relativeTime(dev.lastSavedAt)} 저장됨` : '',
+    saved: builder.lastSavedAt ? `${relativeTime(builder.lastSavedAt)} 저장됨` : '',
     error: '저장 실패',
-  }[dev.autosaveStatus];
+  }[builder.autosaveStatus];
 
   return (
-    <AppShell project={project} activeStage="developer">
+    <AppShell project={project} activeStage="builder">
       <div className="pb-20">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-[20px] font-bold text-ink-strong">Developer · 아이디어 검증 및 고도화</h1>
+            <h1 className="text-[20px] font-bold text-ink-strong">Builder · 아이디어 검증 및 고도화</h1>
             <p className="mt-1 text-[13px] text-ink-muted">AI 채팅과 점검 기준으로 아이디어의 빈틈을 함께 메워보세요.</p>
           </div>
           <div className="flex items-center gap-2">
             {autosaveLabel && (
-              <span className={`text-[12px] ${dev.autosaveStatus === 'saving' ? 'text-ink-faint' : 'text-brand-strong'}`}>
-                {dev.autosaveStatus === 'saving' && '● '}
+              <span className={`text-[12px] ${builder.autosaveStatus === 'saving' ? 'text-ink-faint' : 'text-brand-strong'}`}>
+                {builder.autosaveStatus === 'saving' && '● '}
                 {autosaveLabel}
               </span>
             )}
@@ -193,7 +195,7 @@ export function DeveloperPage() {
         <Tabs
           items={[
             { id: 'start', label: '① 시작 정보' },
-            { id: 'chat', label: '② AI 채팅 고도화', badge: dev.chatMessages.filter((m) => m.role === 'user').length },
+            { id: 'chat', label: '② AI 채팅 고도화', badge: builder.chatMessages.filter((m) => m.role === 'user').length },
             { id: 'criteria', label: '③ 점검 기준' },
           ]}
           activeId={tab}
@@ -211,21 +213,21 @@ export function DeveloperPage() {
                 </Button>
               )}
             </div>
-            <Textarea label="아이디어 요약" rows={2} value={dev.summary} onChange={(e) => markDirty({ summary: e.target.value })} />
+            <Textarea label="아이디어 요약" rows={2} value={builder.summary} onChange={(e) => markDirty({ summary: e.target.value })} />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Textarea label="타겟 고객" rows={2} value={dev.targetCustomer} onChange={(e) => markDirty({ targetCustomer: e.target.value })} />
-              <Textarea label="사용자 문제" rows={2} value={dev.userProblem} onChange={(e) => markDirty({ userProblem: e.target.value })} />
-              <Textarea label="해결 방안" rows={2} value={dev.solution} onChange={(e) => markDirty({ solution: e.target.value })} />
-              <Textarea label="보유 근거" rows={2} value={dev.evidence} onChange={(e) => markDirty({ evidence: e.target.value })} />
-              <Textarea label="핵심 가정" rows={2} value={dev.assumptions} onChange={(e) => markDirty({ assumptions: e.target.value })} />
-              <Textarea label="현재 고민" rows={2} value={dev.currentConcerns} onChange={(e) => markDirty({ currentConcerns: e.target.value })} />
+              <Textarea label="타겟 고객" rows={2} value={builder.targetCustomer} onChange={(e) => markDirty({ targetCustomer: e.target.value })} />
+              <Textarea label="사용자 문제" rows={2} value={builder.userProblem} onChange={(e) => markDirty({ userProblem: e.target.value })} />
+              <Textarea label="해결 방안" rows={2} value={builder.solution} onChange={(e) => markDirty({ solution: e.target.value })} />
+              <Textarea label="보유 근거" rows={2} value={builder.evidence} onChange={(e) => markDirty({ evidence: e.target.value })} />
+              <Textarea label="핵심 가정" rows={2} value={builder.assumptions} onChange={(e) => markDirty({ assumptions: e.target.value })} />
+              <Textarea label="현재 고민" rows={2} value={builder.currentConcerns} onChange={(e) => markDirty({ currentConcerns: e.target.value })} />
             </div>
 
-            {dev.versions.length > 0 && (
+            {builder.versions.length > 0 && (
               <div className="mt-2 border-t border-hairline pt-3">
                 <p className="mb-2 text-[12.5px] font-bold text-ink-muted">저장 이력</p>
                 <ul className="flex flex-col gap-1">
-                  {dev.versions.slice(0, 5).map((v) => (
+                  {builder.versions.slice(0, 5).map((v) => (
                     <li key={v.id} className="text-[12px] text-ink-faint">
                       {v.label} · {v.savedBy} · {formatDateTime(v.savedAt)}
                     </li>
@@ -237,7 +239,7 @@ export function DeveloperPage() {
         )}
 
         {tab === 'chat' && (
-          <ChatPanel messages={dev.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
+          <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
         )}
 
         {tab === 'criteria' && (
@@ -255,7 +257,7 @@ export function DeveloperPage() {
               </div>
             </div>
 
-            {dev.criteria.map((c) => (
+            {builder.criteria.map((c) => (
               <CriterionCard
                 key={c.id}
                 criterion={c}
@@ -279,7 +281,7 @@ export function DeveloperPage() {
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 left-64 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur">
+      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-20' : 'left-64'}`}>
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Badge tone="outline">고도화 진행률 {criteriaProgress}%</Badge>
           <Button size="lg" onClick={sendToPlanner}>

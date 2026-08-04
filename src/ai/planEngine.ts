@@ -1,9 +1,9 @@
-import type { DeveloperState, GeneratorState, PitchSlide, PlanSection } from '../types';
+import type { BuilderState, GeneratorState, PitchSlide, PlanSection } from '../types';
 import { makeId } from '../lib/id';
 
 export interface PlanContext {
   generator: GeneratorState;
-  developer: DeveloperState;
+  builder: BuilderState;
   title: string;
 }
 
@@ -18,12 +18,12 @@ function fallback(value: string, alt: string): string {
 
 export function buildDefaultBizPlanSections(ctx: PlanContext): PlanSection[] {
   const idea = selectedIdeaSummary(ctx);
-  const d = ctx.developer;
+  const d = ctx.builder;
 
   const customer = fallback(d.targetCustomer, idea?.customer ?? '핵심 타겟 고객');
   const problem = fallback(d.userProblem, idea?.problem ?? '고객이 겪는 핵심 문제');
   const solution = fallback(d.solution, idea?.solution ?? '제공하는 해결 방안');
-  const evidence = fallback(d.evidence, '아직 정리되지 않았습니다. Developer 단계에서 근거를 보강해주세요.');
+  const evidence = fallback(d.evidence, '아직 정리되지 않았습니다. Builder 단계에서 근거를 보강해주세요.');
 
   const metCriteria = d.criteria.filter((c) => c.status === 'met').map((c) => c.name);
   const unresolvedCriteria = d.criteria.filter((c) => c.status !== 'met').map((c) => c.name);
@@ -43,7 +43,7 @@ export function buildDefaultBizPlanSections(ctx: PlanContext): PlanSection[] {
     },
     {
       title: '비즈니스 모델 및 수익 구조',
-      content: `${idea?.revenue ?? '수익 모델'}을 기반으로 하며, 초기에는 소규모 유료 베타로 지불 의사를 검증합니다. 단가와 전환율 가정은 Developer 단계의 '수익 구조' 점검 기준을 참고했습니다.`,
+      content: `${idea?.revenue ?? '수익 모델'}을 기반으로 하며, 초기에는 소규모 유료 베타로 지불 의사를 검증합니다. 단가와 전환율 가정은 Builder 단계의 '수익 구조' 점검 기준을 참고했습니다.`,
     },
     {
       title: '실행 계획 및 로드맵',
@@ -59,7 +59,7 @@ export function buildDefaultBizPlanSections(ctx: PlanContext): PlanSection[] {
     },
     {
       title: '리스크 및 대응 전략',
-      content: `핵심 리스크: ${unresolvedCriteria.length > 0 ? unresolvedCriteria.join(', ') : '현재 식별된 미해결 리스크 없음'}. 각 리스크에 대한 대응 방안을 Developer 점검 기준의 '다음 행동' 항목을 참고해 구체화하세요.`,
+      content: `핵심 리스크: ${unresolvedCriteria.length > 0 ? unresolvedCriteria.join(', ') : '현재 식별된 미해결 리스크 없음'}. 각 리스크에 대한 대응 방안을 Builder 점검 기준의 '다음 행동' 항목을 참고해 구체화하세요.`,
     },
   ];
 
@@ -73,7 +73,7 @@ export function buildDefaultBizPlanSections(ctx: PlanContext): PlanSection[] {
 
 export function buildDefaultPitchSlides(ctx: PlanContext): PitchSlide[] {
   const idea = selectedIdeaSummary(ctx);
-  const d = ctx.developer;
+  const d = ctx.builder;
   const customer = fallback(d.targetCustomer, idea?.customer ?? '핵심 타겟 고객');
   const problem = fallback(d.userProblem, idea?.problem ?? '고객이 겪는 핵심 문제');
   const solution = fallback(d.solution, idea?.solution ?? '제공하는 해결 방안');
@@ -84,7 +84,7 @@ export function buildDefaultPitchSlides(ctx: PlanContext): PitchSlide[] {
     { title: '솔루션', bullets: [solution, idea?.valueProp ?? '핵심 가치 제안'], note: '데모 스크린샷이나 사용 흐름을 추가하세요.', chart: 'none' },
     { title: '시장 기회', bullets: ['TAM / SAM / SOM 추정치', '시장 성장률 및 트렌드'], note: '리서치 출처를 명시하세요.', chart: 'bar' },
     { title: '비즈니스 모델', bullets: [idea?.revenue ?? '수익 모델', '단가 및 전환율 가정'], note: '', chart: 'none' },
-    { title: '경쟁 우위', bullets: ['핵심 차별점', '대체 불가능한 이유'], note: 'Developer 단계의 경쟁 환경 근거를 활용하세요.', chart: 'none' },
+    { title: '경쟁 우위', bullets: ['핵심 차별점', '대체 불가능한 이유'], note: 'Builder 단계의 경쟁 환경 근거를 활용하세요.', chart: 'none' },
     { title: '실행 로드맵', bullets: ['0-3개월: MVP 검증', '3-6개월: 초기 고객 확보', '6-12개월: 확장'], note: '', chart: 'line' },
     { title: '팀', bullets: ['창업팀 구성', '핵심 역량'], note: '', chart: 'none' },
     { title: '재무 하이라이트', bullets: ['12개월 매출 목표', '손익분기 시점'], note: '', chart: 'bar' },

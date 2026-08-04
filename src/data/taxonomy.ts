@@ -18,6 +18,15 @@ export const CATEGORY_COLOR: Record<CardCategory, string> = {
   technology: '#0891b2',
 };
 
+export const CATEGORY_ICON: Record<CardCategory, string> = {
+  industry: '🏢',
+  customer: '👥',
+  problem: '❗',
+  businessModel: '💼',
+  revenue: '📈',
+  technology: '⚙️',
+};
+
 export const CATEGORY_ORDER: CardCategory[] = [
   'industry',
   'customer',

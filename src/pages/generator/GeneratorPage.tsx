@@ -13,6 +13,7 @@ import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
+import { useUiStore } from '../../store/uiStore';
 import { useToast } from '../../components/ui/Toast';
 import { getCardsByIds } from '../../data/cards';
 import type { BizCard, IdeaDraft } from '../../types';
@@ -26,11 +27,12 @@ export function GeneratorPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const currentEmail = useAuthStore((s) => s.currentEmail);
+  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
 
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
   const updateGenerator = useProjectStore((s) => s.updateGenerator);
   const updateProject = useProjectStore((s) => s.updateProject);
-  const updateDeveloper = useProjectStore((s) => s.updateDeveloper);
+  const updateBuilder = useProjectStore((s) => s.updateBuilder);
 
   const [step, setStep] = useState<'select' | 'results'>('select');
   const [detailCard, setDetailCard] = useState<BizCard | null>(null);
@@ -145,26 +147,26 @@ export function GeneratorPage() {
     toast.push(`${version.label}으로 복원했습니다.`);
   };
 
-  const sendToDeveloper = () => {
+  const sendToBuilder = () => {
     if (!gen.selectedIdeaId) {
-      toast.push('Developer로 전달할 아이디어를 먼저 채택해주세요.', 'error');
+      toast.push('Builder로 전달할 아이디어를 먼저 채택해주세요.', 'error');
       return;
     }
     const idea = gen.ideas.find((i) => i.id === gen.selectedIdeaId);
     if (!idea) return;
 
-    const dev = project.developer;
-    updateDeveloper(project.id, {
-      summary: dev.summary || idea.oneLiner,
-      targetCustomer: dev.targetCustomer || idea.customer,
-      userProblem: dev.userProblem || idea.problem,
-      solution: dev.solution || idea.solution,
+    const builder = project.builder;
+    updateBuilder(project.id, {
+      summary: builder.summary || idea.oneLiner,
+      targetCustomer: builder.targetCustomer || idea.customer,
+      userProblem: builder.userProblem || idea.problem,
+      solution: builder.solution || idea.solution,
     });
     if (project.stage === 'generator') {
-      updateProject(project.id, { stage: 'developer' });
+      updateProject(project.id, { stage: 'builder' });
     }
-    toast.push('Developer로 전달했습니다.');
-    navigate(`/project/${project.id}/developer`);
+    toast.push('Builder로 전달했습니다.');
+    navigate(`/project/${project.id}/builder`);
   };
 
   return (
@@ -299,8 +301,8 @@ export function GeneratorPage() {
                     )}
                   </div>
 
-                  <Button size="lg" fullWidth onClick={sendToDeveloper}>
-                    Developer로 전달 →
+                  <Button size="lg" fullWidth onClick={sendToBuilder}>
+                    Builder로 전달 →
                   </Button>
                 </div>
               </div>
@@ -309,7 +311,7 @@ export function GeneratorPage() {
         )}
 
         {step === 'select' && (
-          <div className="fixed inset-x-0 bottom-0 left-64 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur">
+          <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-20' : 'left-64'}`}>
             <div className="mx-auto flex max-w-6xl items-center justify-between">
               <p className="text-[13px] text-ink-muted">
                 {canGenerate ? `${gen.selectedCardIds.length}개 카드로 아이디어를 생성할 수 있어요` : '카드를 2개 이상 선택해주세요'}

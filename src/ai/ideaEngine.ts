@@ -87,7 +87,7 @@ export function generateIdeas(input: IdeaGenerationInput): IdeaDraft[] {
 
     const sections: IdeaSection[] = [
       { id: makeId('sec'), title: '타겟 고객', content: `${customerLabel}. ${interest ? `특히 '${interest}' 영역에서 반복적으로 이 문제를 겪는 사람들을 우선 타겟으로 합니다.` : '초기에는 좁고 뾰족한 세그먼트부터 검증하는 것을 권장합니다.'}` },
-      { id: makeId('sec'), title: '사용자 문제', content: `${problemLabel}. ${problemFocus ? `사용자가 직접 언급한 문제: "${problemFocus}"` : '문제의 발생 빈도와 지불 의사를 다음 단계(Developer)에서 검증해야 합니다.'}` },
+      { id: makeId('sec'), title: '사용자 문제', content: `${problemLabel}. ${problemFocus ? `사용자가 직접 언급한 문제: "${problemFocus}"` : '문제의 발생 빈도와 지불 의사를 다음 단계(Builder)에서 검증해야 합니다.'}` },
       { id: makeId('sec'), title: '해결 방안', content: solutionText },
       { id: makeId('sec'), title: '핵심 가치', content: `${valuePhrase}. 경쟁 대비 좁은 영역에 집중해 초기 신뢰를 확보하는 전략을 제안합니다.` },
       { id: makeId('sec'), title: '수익 방식', content: `${revenueLabel} 기반. 초기에는 소규모 유료 베타로 지불 의사를 확인한 뒤 가격을 조정하는 것을 권장합니다.` },

@@ -50,7 +50,7 @@ export function SignupPage() {
         return;
       }
       toast.push('회원가입이 완료되었습니다. 확인 메일을 보냈어요 (데모 환경).');
-      navigate('/mypage', { replace: true });
+      navigate('/home', { replace: true });
     }, 400);
   };
 
