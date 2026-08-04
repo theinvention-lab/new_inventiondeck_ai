@@ -101,6 +101,17 @@
   box-sizing: border-box;
 }
 
+.fi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+.fi::before {
+  line-height: 1;
+}
+
 html,
 body {
   margin: 0;

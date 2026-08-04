@@ -4,10 +4,7 @@ import { useCardStore } from '../../store/cardStore';
 import { CATEGORY_LABEL, CATEGORY_ORDER } from '../../data/taxonomy';
 import { CardTile } from './CardTile';
 import { Input } from '../ui/Input';
-import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
-
-type SortMode = 'relevance' | 'popular' | 'title';
 
 const PAGE_SIZE = 30;
 
@@ -22,7 +19,6 @@ export function CardLibrary({
 }) {
   const [category, setCategory] = useState<CardCategory | 'all'>('all');
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState<SortMode>('relevance');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const allCards = useCardStore((s) => s.cards);
@@ -40,9 +36,7 @@ export function CardLibrary({
       );
     }
     const sorted = [...list];
-    if (sort === 'popular') sorted.sort((a, b) => b.popularity - a.popularity);
-    else if (sort === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ko'));
-    else if (q) {
+    if (q) {
       sorted.sort((a, b) => {
         const aScore = a.title.toLowerCase().startsWith(q) ? 1 : 0;
         const bScore = b.title.toLowerCase().startsWith(q) ? 1 : 0;
@@ -52,28 +46,21 @@ export function CardLibrary({
       sorted.sort((a, b) => b.popularity - a.popularity);
     }
     return sorted;
-  }, [allCards, category, query, sort]);
+  }, [allCards, category, query]);
 
   const visible = filtered.slice(0, visibleCount);
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Input
-          placeholder="키워드로 카드 검색 (예: 헬스케어, 구독, 시니어…)"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setVisibleCount(PAGE_SIZE);
-          }}
-          className="sm:w-80"
-        />
-        <Select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} className="w-full sm:w-40">
-          <option value="relevance">관련도순</option>
-          <option value="popular">인기순</option>
-          <option value="title">이름순</option>
-        </Select>
-      </div>
+      <Input
+        placeholder="키워드로 카드 검색 (예: 헬스케어, 구독, 시니어…)"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setVisibleCount(PAGE_SIZE);
+        }}
+        className="sm:w-80"
+      />
 
       <div className="flex flex-wrap gap-1.5">
         <button

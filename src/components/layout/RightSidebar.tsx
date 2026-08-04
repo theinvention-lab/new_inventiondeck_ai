@@ -53,13 +53,13 @@ function SlidePanel({
         style={{ top: topOffset, right: 84, maxHeight: 'calc(100vh - 40px)' }}
       >
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
-          <h2 className="text-[14px] font-bold text-ink-strong">{title}</h2>
           <div className="flex items-center gap-3">
+            <h2 className="text-[14px] font-bold text-ink-strong">{title}</h2>
             {headerAction}
-            <button onClick={onClose} aria-label="닫기" className="text-ink-faint hover:text-ink-strong">
-              ✕
-            </button>
           </div>
+          <button onClick={onClose} aria-label="닫기" className="text-ink-faint hover:text-ink-strong">
+            ✕
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4">{children}</div>
       </div>

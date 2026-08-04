@@ -13,31 +13,24 @@ interface BusinessCardRow {
 }
 
 // The live Supabase category values (public.business_cards / business_cards_2)
-// use these exact English labels. Korean aliases are kept as a defensive
-// fallback in case either table is ever populated with localized values.
-const CATEGORY_ALIASES: Record<string, CardCategory> = {
-  theme: 'theme',
-  '산업': 'theme',
-  tech: 'tech',
-  technology: 'tech',
-  '기술': 'tech',
-  revenue: 'revenue',
-  '수익모델': 'revenue',
-  '수익': 'revenue',
-  trend: 'trend',
-  '트렌드': 'trend',
-  segment: 'segment',
-  segement: 'segment', // defensive: common typo for "segment"
-  '고객세그먼트': 'segment',
-  '고객': 'segment',
-  feature: 'feature',
-  '비즈니스피쳐': 'feature',
-  '비즈니스피처': 'feature',
-};
+// are expected to be the English labels (Theme/Tech/Revenue/Trend/Segment/
+// Feature), but real rows may carry variants ("Revenue Model", "Customer
+// Segment", trailing whitespace, Korean labels, the "Segement" typo, …).
+// Matching is substring-based and case-insensitive so any of those still land
+// on the right category instead of being silently dropped.
+const CATEGORY_KEYWORDS: Array<{ category: CardCategory; keywords: string[] }> = [
+  { category: 'theme', keywords: ['theme', '산업'] },
+  { category: 'trend', keywords: ['trend', '트렌드'] },
+  { category: 'tech', keywords: ['tech', '기술'] },
+  { category: 'revenue', keywords: ['revenue', '수익'] },
+  { category: 'segment', keywords: ['segment', 'segement', '세그먼트', '고객'] },
+  { category: 'feature', keywords: ['feature', '피쳐', '피처'] },
+];
 
 function normalizeCategory(raw: string): CardCategory | null {
-  const key = raw.trim().toLowerCase().replace(/[·・\s_-]+/g, '');
-  return CATEGORY_ALIASES[key] ?? null;
+  const key = raw.trim().toLowerCase();
+  const match = CATEGORY_KEYWORDS.find(({ keywords }) => keywords.some((kw) => key.includes(kw)));
+  return match?.category ?? null;
 }
 
 function toBizCard(row: BusinessCardRow, popularity: number): BizCard | null {

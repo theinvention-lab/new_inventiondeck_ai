@@ -5,7 +5,6 @@ import { CardLibrary } from '../../components/generator/CardLibrary';
 import { CardTray } from '../../components/generator/CardTray';
 import { CardDetailDialog } from '../../components/generator/CardDetailDialog';
 import { RecommendedRail } from '../../components/generator/RecommendedRail';
-import { IdeaResultCard } from '../../components/generator/IdeaResultCard';
 import { Button } from '../../components/ui/Button';
 import { Textarea } from '../../components/ui/Textarea';
 import { Tabs } from '../../components/ui/Tabs';
@@ -17,10 +16,9 @@ import { useProjectStore } from '../../store/projectStore';
 import { useUiStore } from '../../store/uiStore';
 import { useToast } from '../../components/ui/Toast';
 import { useCardStore } from '../../store/cardStore';
-import type { BizCard, IdeaDraft } from '../../types';
+import type { BizCard } from '../../types';
 import { generateIdeas } from '../../ai/ideaEngine';
 import { recommendCards } from '../../lib/recommend';
-import { makeId } from '../../lib/id';
 import { relativeTime } from '../../lib/format';
 
 export function GeneratorPage() {
@@ -39,7 +37,6 @@ export function GeneratorPage() {
   const [detailCard, setDetailCard] = useState<BizCard | null>(null);
   const [generating, setGenerating] = useState(false);
   const [genProgress, setGenProgress] = useState<number | null>(null);
-  const [viewingIdeaId, setViewingIdeaId] = useState<string | null>(null);
   const [seedOffset, setSeedOffset] = useState(0);
 
   const startProgressTicker = () => {
@@ -75,7 +72,6 @@ export function GeneratorPage() {
 
   const gen = project.generator;
   const canGenerate = gen.selectedCardIds.length >= 2;
-  const viewingIdea = gen.ideas.find((i) => i.id === viewingIdeaId) ?? gen.ideas[0] ?? null;
 
   const toggleCard = (id: string) => {
     const exists = gen.selectedCardIds.includes(id);
@@ -105,7 +101,6 @@ export function GeneratorPage() {
         seedOffset,
       });
       updateGenerator(project.id, { ideas, lastGeneratedAt: new Date().toISOString(), selectedIdeaId: null });
-      setViewingIdeaId(ideas[0]?.id ?? null);
       setSeedOffset((v) => v + 1);
       setGenProgress(100);
       window.setTimeout(() => setGenProgress(null), 500);
@@ -128,7 +123,6 @@ export function GeneratorPage() {
         seedOffset,
       });
       updateGenerator(project.id, { ideas, selectedIdeaId: null, lastGeneratedAt: new Date().toISOString() });
-      setViewingIdeaId(ideas[0]?.id ?? null);
       setSeedOffset((v) => v + 1);
       setGenProgress(100);
       window.setTimeout(() => setGenProgress(null), 500);
@@ -137,35 +131,8 @@ export function GeneratorPage() {
     }, 900);
   };
 
-  const patchIdea = (ideaId: string, patch: Partial<IdeaDraft>) => {
-    updateGenerator(project.id, {
-      ideas: gen.ideas.map((i) => (i.id === ideaId ? { ...i, ...patch } : i)),
-    });
-  };
-
   const selectAsAdopted = (ideaId: string) => {
     updateGenerator(project.id, { selectedIdeaId: ideaId });
-  };
-
-  const saveVersion = () => {
-    if (!viewingIdea) return;
-    const version = {
-      id: makeId('ver'),
-      label: `버전 ${gen.versions.length + 1}`,
-      savedAt: new Date().toISOString(),
-      snapshot: viewingIdea,
-    };
-    updateGenerator(project.id, { versions: [version, ...gen.versions] });
-    toast.push('버전을 저장했습니다.');
-  };
-
-  const restoreVersion = (versionId: string) => {
-    const version = gen.versions.find((v) => v.id === versionId);
-    if (!version) return;
-    updateGenerator(project.id, {
-      ideas: gen.ideas.map((i) => (i.id === version.snapshot.id ? version.snapshot : i)),
-    });
-    toast.push(`${version.label}으로 복원했습니다.`);
   };
 
   const sendToBuilder = () => {
@@ -192,13 +159,11 @@ export function GeneratorPage() {
 
   return (
     <AppShell>
-      <div className="pb-24">
-      <CardTray cards={selectedCards} onRemove={removeCard} />
-
+      <div className="pb-36">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h1 className="text-[20px] font-bold text-ink-strong">Generator · AI 기반 아이디어 생성</h1>
+            <h1 className="text-[20px] font-bold text-ink-strong">Generator</h1>
             <p className="mt-1 text-[13px] text-ink-muted">
               카드를 조합하고 관심사를 입력하면 AI가 서로 다른 사업 아이디어 초안을 제안합니다.
             </p>
@@ -247,110 +212,78 @@ export function GeneratorPage() {
           />
         ) : (
           <div className="flex flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-2">
-              {gen.ideas.map((idea, idx) => (
-                <button
-                  key={idea.id}
-                  onClick={() => setViewingIdeaId(idea.id)}
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] font-semibold transition-colors ${
-                    viewingIdea?.id === idea.id
-                      ? 'border-ink-strong bg-ink-strong text-white'
-                      : 'border-hairline-strong bg-white text-ink-muted hover:bg-canvas-sunken'
-                  }`}
-                >
-                  아이디어 {idx + 1}
-                  {gen.selectedIdeaId === idea.id && <span className="text-brand">✓ 채택</span>}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[13px] text-ink-faint">
+                {gen.lastGeneratedAt && `생성 시각: ${relativeTime(gen.lastGeneratedAt)}`}
+              </p>
               <Button variant="outline" size="sm" onClick={handleRegenerate} loading={generating}>
                 🔄 다시 생성
               </Button>
             </div>
 
-            {genProgress !== null && (
-              <ProgressBar value={genProgress} showLabel className="max-w-xs" />
-            )}
+            {genProgress !== null && <ProgressBar value={genProgress} showLabel className="max-w-xs" />}
 
-            {viewingIdea && (
-              <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
-                <div className="rounded-xl border border-hairline bg-white p-5">
-                  <div className="mb-4 flex items-center justify-between">
-                    <p className="text-[13px] text-ink-faint">
-                      {gen.lastGeneratedAt && `생성 시각: ${relativeTime(gen.lastGeneratedAt)}`}
-                    </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {gen.ideas.map((idea, idx) => {
+                const adopted = gen.selectedIdeaId === idea.id;
+                return (
+                  <div
+                    key={idea.id}
+                    className={`flex flex-col gap-3 rounded-xl border bg-white p-5 ${
+                      adopted ? 'border-brand ring-1 ring-brand' : 'border-hairline'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-ink-faint">아이디어 {idx + 1}</span>
+                      {adopted && <Badge tone="brand">채택됨</Badge>}
+                    </div>
+                    <h3 className="text-[16px] font-bold text-ink-strong">{idea.title}</h3>
+                    <div>
+                      <p className="mb-1 text-[11px] font-bold text-ink-faint">한 줄 요약</p>
+                      <p className="text-[13px] leading-relaxed text-ink-muted">{idea.oneLiner}</p>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-[11px] font-bold text-ink-faint">핵심 가치</p>
+                      <p className="text-[13px] leading-relaxed text-ink-muted">{idea.valueProp}</p>
+                    </div>
                     <Button
+                      variant={adopted ? 'primary' : 'outline'}
                       size="sm"
-                      variant={gen.selectedIdeaId === viewingIdea.id ? 'primary' : 'outline'}
-                      onClick={() => selectAsAdopted(viewingIdea.id)}
+                      onClick={() => selectAsAdopted(idea.id)}
+                      className="mt-1"
                     >
-                      {gen.selectedIdeaId === viewingIdea.id ? '채택된 아이디어 ✓' : '이 아이디어 채택하기'}
+                      {adopted ? '채택된 아이디어 ✓' : '이 아이디어 채택하기'}
                     </Button>
                   </div>
-                  <IdeaResultCard idea={viewingIdea} onChange={(patch) => patchIdea(viewingIdea.id, patch)} />
-                </div>
+                );
+              })}
+            </div>
 
-                <div className="flex flex-col gap-4">
-                  <div className="rounded-xl border border-hairline bg-white p-4">
-                    <p className="mb-2 text-[13px] font-bold text-ink-strong">태그</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {viewingIdea.tags.map((t) => (
-                        <Badge key={t} tone="outline">
-                          {t}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl border border-hairline bg-white p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="text-[13px] font-bold text-ink-strong">버전 기록</p>
-                      <Button size="sm" variant="ghost" onClick={saveVersion}>
-                        + 저장
-                      </Button>
-                    </div>
-                    {gen.versions.length === 0 ? (
-                      <p className="text-[12px] text-ink-faint">아직 저장된 버전이 없습니다.</p>
-                    ) : (
-                      <ul className="flex flex-col gap-1.5">
-                        {gen.versions.slice(0, 5).map((v) => (
-                          <li key={v.id} className="flex items-center justify-between text-[12px] text-ink-muted">
-                            <span>
-                              {v.label} · {relativeTime(v.savedAt)}
-                            </span>
-                            <button className="font-semibold text-brand" onClick={() => restoreVersion(v.id)}>
-                              복원
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-
-                  <Button size="lg" fullWidth onClick={sendToBuilder}>
-                    Builder로 전달 →
-                  </Button>
-                </div>
-              </div>
-            )}
+            <Button size="lg" onClick={sendToBuilder} disabled={!gen.selectedIdeaId} className="self-end">
+              Builder로 전달 →
+            </Button>
           </div>
         )}
 
         {step === 'select' && (
           <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-[88px]' : 'left-64'}`}>
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-              {genProgress !== null ? (
-                <div className="flex flex-1 items-center gap-3">
-                  <span className="shrink-0 text-[13px] font-semibold text-ink-strong">AI가 아이디어를 만드는 중…</span>
-                  <ProgressBar value={genProgress} showLabel className="max-w-xs flex-1" />
-                </div>
-              ) : (
-                <p className="text-[13px] text-ink-muted">
-                  {canGenerate ? `${gen.selectedCardIds.length}개 카드로 아이디어를 생성할 수 있어요` : '카드를 2개 이상 선택해주세요'}
-                </p>
-              )}
-              <Button size="lg" onClick={handleGenerate} loading={generating} disabled={!canGenerate}>
-                ✨ AI 아이디어 생성하기
-              </Button>
+            <div className="mx-auto flex max-w-6xl flex-col gap-2.5">
+              <CardTray cards={selectedCards} onRemove={removeCard} />
+              <div className="flex items-center justify-between gap-4 border-t border-hairline pt-2.5">
+                {genProgress !== null ? (
+                  <div className="flex flex-1 items-center gap-3">
+                    <span className="shrink-0 text-[13px] font-semibold text-ink-strong">AI가 아이디어를 만드는 중…</span>
+                    <ProgressBar value={genProgress} showLabel className="max-w-xs flex-1" />
+                  </div>
+                ) : (
+                  <p className="text-[13px] text-ink-muted">
+                    {canGenerate ? `${gen.selectedCardIds.length}개 카드로 아이디어를 생성할 수 있어요` : '카드를 2개 이상 선택해주세요'}
+                  </p>
+                )}
+                <Button size="sm" onClick={handleGenerate} loading={generating} disabled={!canGenerate}>
+                  ✨ AI 아이디어 생성하기
+                </Button>
+              </div>
             </div>
           </div>
         )}
