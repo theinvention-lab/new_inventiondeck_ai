@@ -1,7 +1,15 @@
 import type { BizCard } from '../../types';
 import { CATEGORY_LABEL } from '../../data/taxonomy';
 
-export function RecommendedRail({ cards, onAdd }: { cards: BizCard[]; onAdd: (id: string) => void }) {
+export function RecommendedRail({
+  cards,
+  onAdd,
+  onOpenDetail,
+}: {
+  cards: BizCard[];
+  onAdd: (id: string) => void;
+  onOpenDetail: (card: BizCard) => void;
+}) {
   if (cards.length === 0) {
     return (
       <p className="text-[12.5px] leading-relaxed text-ink-faint">
@@ -13,10 +21,12 @@ export function RecommendedRail({ cards, onAdd }: { cards: BizCard[]; onAdd: (id
     <div className="flex max-h-[220px] flex-col gap-2 overflow-y-auto pr-1">
       {cards.map((card) => (
         <div key={card.id} className="flex items-center gap-2.5 rounded-lg border border-hairline bg-white p-2.5">
-          <span className="shrink-0 rounded-full bg-canvas-sunken px-2 py-0.5 text-[10px] font-bold text-ink-muted">
-            {CATEGORY_LABEL[card.category]}
-          </span>
-          <p className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-ink-strong">{card.title}</p>
+          <button onClick={() => onOpenDetail(card)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+            <span className="shrink-0 rounded-full bg-canvas-sunken px-2 py-0.5 text-[10px] font-bold text-ink-muted">
+              {CATEGORY_LABEL[card.category]}
+            </span>
+            <p className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-ink-strong">{card.title}</p>
+          </button>
           <button
             onClick={() => onAdd(card.id)}
             className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-[11px] font-semibold text-brand-strong hover:bg-brand/20"

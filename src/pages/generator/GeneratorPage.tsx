@@ -161,10 +161,6 @@ export function GeneratorPage() {
     <AppShell>
       <div className="pb-36">
       <div className="mx-auto max-w-6xl px-5 py-6">
-        <div className="mb-5 flex items-center justify-end">
-          <Badge tone={gen.ideas.length > 0 ? 'brand' : 'neutral'}>{gen.ideas.length}개 생성됨</Badge>
-        </div>
-
         <div className="mb-5 grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
             <Textarea
@@ -177,7 +173,7 @@ export function GeneratorPage() {
           </div>
           <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
             <p className="mb-3 text-[13px] font-bold text-ink-strong">✨ 추천 카드</p>
-            <RecommendedRail cards={recommended} onAdd={toggleCard} />
+            <RecommendedRail cards={recommended} onAdd={toggleCard} onOpenDetail={setDetailCard} />
           </div>
         </div>
 
@@ -219,10 +215,8 @@ export function GeneratorPage() {
                 return (
                   <div
                     key={idea.id}
-                    className={`flex flex-col gap-3 rounded-xl border border-t-4 bg-white p-5 ${
-                      adopted ? 'border-brand ring-1 ring-brand' : 'border-hairline'
-                    }`}
-                    style={{ borderTopColor: accent }}
+                    className={`flex flex-col gap-3 rounded-xl bg-white p-5 ${adopted ? 'border-2' : 'border'}`}
+                    style={{ borderColor: accent }}
                   >
                     <div className="flex items-center justify-between">
                       <span
@@ -263,23 +257,12 @@ export function GeneratorPage() {
 
         {step === 'select' && (
           <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
-            <div className="mx-auto flex max-w-6xl flex-col gap-2.5">
+            <div className="mx-auto flex max-w-6xl items-center gap-4">
               <CardTray cards={selectedCards} onRemove={removeCard} />
-              <div className="flex items-center justify-between gap-4 border-t border-hairline pt-2.5">
-                {genProgress !== null ? (
-                  <div className="flex flex-1 items-center gap-3">
-                    <span className="shrink-0 text-[13px] font-semibold text-ink-strong">AI가 아이디어를 만드는 중…</span>
-                    <ProgressBar value={genProgress} showLabel className="max-w-xs flex-1" />
-                  </div>
-                ) : (
-                  <p className="text-[13px] text-ink-muted">
-                    {canGenerate ? `${gen.selectedCardIds.length}개 카드로 아이디어를 생성할 수 있어요` : '카드를 2개 이상 선택해주세요'}
-                  </p>
-                )}
-                <Button size="sm" onClick={handleGenerate} loading={generating} disabled={!canGenerate}>
-                  ✨ AI 아이디어 생성하기
-                </Button>
-              </div>
+              {genProgress !== null && <ProgressBar value={genProgress} showLabel className="w-40 shrink-0" />}
+              <Button size="sm" onClick={handleGenerate} loading={generating} disabled={!canGenerate} className="shrink-0">
+                ✨ AI 아이디어 생성하기
+              </Button>
             </div>
           </div>
         )}
