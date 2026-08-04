@@ -4,7 +4,7 @@ import { RightSidebar } from './RightSidebar';
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-canvas-sunken">
+    <div className="bg-app-grid flex min-h-screen">
       <Sidebar />
       <main className="min-w-0 flex-1">{children}</main>
       <RightSidebar />

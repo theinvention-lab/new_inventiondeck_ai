@@ -333,7 +333,7 @@ export function GeneratorPage() {
         )}
 
         {step === 'select' && (
-          <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-20' : 'left-64'}`}>
+          <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-[88px]' : 'left-64'}`}>
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
               {genProgress !== null ? (
                 <div className="flex flex-1 items-center gap-3">

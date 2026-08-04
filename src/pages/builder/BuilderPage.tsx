@@ -369,7 +369,7 @@ export function BuilderPage() {
         )}
       </div>
 
-      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-20' : 'left-64'}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur transition-[left] duration-150 ${sidebarCollapsed ? 'left-[88px]' : 'left-64'}`}>
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Badge tone="outline">고도화 진행률 {criteriaProgress}%</Badge>
           <Button size="lg" onClick={sendToPlanner}>

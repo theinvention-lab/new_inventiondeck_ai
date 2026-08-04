@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Logo } from './Logo';
+import logoUrl from '../../assets/logo.webp';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
 
 export const SIDEBAR_WIDTH_EXPANDED = 'w-64';
-export const SIDEBAR_WIDTH_COLLAPSED = 'w-20';
+export const SIDEBAR_WIDTH_COLLAPSED = 'w-[88px]';
 
 const NAV_ITEMS = [
   { to: '/home', icon: '🏠', label: '홈', match: (path: string) => path === '/home' || path === '/' },
@@ -26,8 +27,8 @@ export function Sidebar() {
     >
       <div className={`flex h-16 items-center border-b border-hairline ${collapsed ? 'justify-center px-2' : 'px-5'}`}>
         {collapsed ? (
-          <Link to="/home" className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-[13px] font-bold text-white">
-            I
+          <Link to="/home" className="flex h-8 w-8 items-center justify-center">
+            <img src={logoUrl} alt="InventionDeck" className="h-8 w-8 rounded-[6px]" />
           </Link>
         ) : (
           <Logo />
@@ -42,7 +43,7 @@ export function Sidebar() {
             key={item.label}
             to={item.to}
             className={`flex items-center rounded-lg text-[13.5px] font-semibold transition-colors ${
-              collapsed ? 'flex-col justify-center gap-1 px-1 py-2.5' : 'gap-2.5 px-3 py-2.5'
+              collapsed ? 'flex-col justify-center gap-1 px-0.5 py-2.5' : 'gap-2.5 px-3 py-2.5'
             } ${
               item.match(location.pathname, location.search)
                 ? 'bg-brand-soft text-brand-strong'
@@ -50,7 +51,7 @@ export function Sidebar() {
             }`}
           >
             <span className="text-[16px]">{item.icon}</span>
-            <span className={collapsed ? 'whitespace-nowrap text-[9px] font-semibold leading-none' : ''}>{item.label}</span>
+            <span className={collapsed ? 'whitespace-nowrap text-[10.5px] font-semibold leading-none' : ''}>{item.label}</span>
           </Link>
         ))}
       </nav>

@@ -46,8 +46,7 @@ export function HomeChatPanel({
             {copy.icon}
           </span>
           <div className="min-w-0">
-            <p className="text-[13.5px] font-bold text-ink-strong">{copy.label} 채팅</p>
-            <p className="truncate text-[11.5px] text-ink-faint">{copy.subtitle}</p>
+            <p className="truncate text-[12.5px] text-ink-muted">{copy.subtitle}</p>
           </div>
         </div>
 

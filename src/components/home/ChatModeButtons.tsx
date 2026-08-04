@@ -8,10 +8,10 @@ export function ChatModeButtons({ active, onSelect }: { active: ChatMode; onSele
   const activeCopy = MODE_COPY[active];
 
   return (
-    <div className="mx-auto w-full max-w-md">
-      <div className="relative flex rounded-full bg-canvas-sunken p-1">
+    <div className="mx-auto w-full max-w-[320px]">
+      <div className="relative flex rounded-lg bg-canvas-sunken p-1">
         <div
-          className="absolute top-1 bottom-1 left-1 rounded-full shadow-sm transition-transform duration-300 ease-out"
+          className="absolute top-1 bottom-1 left-1 rounded-md shadow-sm transition-transform duration-300 ease-out"
           style={{
             width: `calc((100% - 8px) / ${MODES.length})`,
             transform: `translateX(${activeIndex * 100}%)`,
@@ -25,7 +25,7 @@ export function ChatModeButtons({ active, onSelect }: { active: ChatMode; onSele
             <button
               key={mode}
               onClick={() => onSelect(mode)}
-              className={`relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-[14px] font-bold transition-colors duration-300 ${
+              className={`relative z-10 flex flex-1 items-center justify-center gap-1 rounded-md py-1.5 text-[12.5px] font-bold transition-colors duration-300 ${
                 isActive ? 'text-white' : 'text-ink-muted hover:text-ink-strong'
               }`}
             >

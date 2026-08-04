@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Dialog } from '../ui/Dialog';
 import { Input } from '../ui/Input';
@@ -9,6 +11,57 @@ import { useProjectStore } from '../../store/projectStore';
 import { useNoteStore } from '../../store/noteStore';
 import { useToast } from '../ui/Toast';
 import type { Note } from '../../types';
+
+const PANEL_TOP: Record<'projects' | 'notes', number> = {
+  projects: 20,
+  notes: 72,
+};
+
+function SlidePanel({
+  open,
+  onClose,
+  title,
+  topOffset,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  topOffset: number;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <>
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="animate-slide-in-right fixed z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col rounded-2xl border border-hairline bg-white shadow-lg"
+        style={{ top: topOffset, right: 84, maxHeight: 'calc(100vh - 40px)' }}
+      >
+        <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
+          <h2 className="text-[14px] font-bold text-ink-strong">{title}</h2>
+          <button onClick={onClose} aria-label="닫기" className="text-ink-faint hover:text-ink-strong">
+            ✕
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">{children}</div>
+      </div>
+    </>,
+    document.body,
+  );
+}
 
 export function RightSidebar() {
   const navigate = useNavigate();
@@ -78,22 +131,28 @@ export function RightSidebar() {
     <>
       <aside className="sticky top-0 flex h-screen w-16 shrink-0 flex-col items-center gap-2 border-l border-hairline bg-white py-5">
         <button
-          onClick={() => setOpenPanel('projects')}
+          onClick={() => setOpenPanel((p) => (p === 'projects' ? null : 'projects'))}
           aria-label="내 프로젝트"
-          className="flex h-11 w-11 items-center justify-center rounded-xl text-ink-muted transition-colors hover:bg-canvas-sunken hover:text-ink-strong"
+          className={`flex h-11 w-14 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors ${
+            openPanel === 'projects' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
+          }`}
         >
-          <span className="text-[19px]">📁</span>
+          <span className="text-[17px]">📁</span>
+          <span className="text-[9px] font-semibold leading-none whitespace-nowrap">프로젝트</span>
         </button>
         <button
-          onClick={() => setOpenPanel('notes')}
+          onClick={() => setOpenPanel((p) => (p === 'notes' ? null : 'notes'))}
           aria-label="내 메모"
-          className="flex h-11 w-11 items-center justify-center rounded-xl text-ink-muted transition-colors hover:bg-canvas-sunken hover:text-ink-strong"
+          className={`flex h-11 w-14 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors ${
+            openPanel === 'notes' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
+          }`}
         >
-          <span className="text-[19px]">📝</span>
+          <span className="text-[17px]">📝</span>
+          <span className="text-[9px] font-semibold leading-none whitespace-nowrap">메모</span>
         </button>
       </aside>
 
-      <Dialog open={openPanel === 'projects'} onClose={() => setOpenPanel(null)} title="내 프로젝트" size="lg">
+      <SlidePanel open={openPanel === 'projects'} onClose={() => setOpenPanel(null)} title="내 프로젝트" topOffset={PANEL_TOP.projects}>
         {active.length === 0 ? (
           <button
             onClick={handleCreateProject}
@@ -103,7 +162,7 @@ export function RightSidebar() {
             <span className="text-[13.5px] font-bold text-ink-strong">새로운 프로젝트를 생성하기</span>
           </button>
         ) : (
-          <div className="grid max-h-[60vh] grid-cols-1 gap-3 overflow-y-auto sm:grid-cols-2">
+          <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto">
             {active.map((p) => {
               const idea = p.generator.ideas.find((i) => i.id === p.generator.selectedIdeaId) ?? p.generator.ideas[0];
               return (
@@ -124,9 +183,9 @@ export function RightSidebar() {
             })}
           </div>
         )}
-      </Dialog>
+      </SlidePanel>
 
-      <Dialog open={openPanel === 'notes'} onClose={() => setOpenPanel(null)} title="내 메모" size="lg">
+      <SlidePanel open={openPanel === 'notes'} onClose={() => setOpenPanel(null)} title="내 메모" topOffset={PANEL_TOP.notes}>
         <div className="mb-4 flex justify-end">
           <Button size="sm" onClick={openNewNoteDialog}>
             + 새 메모
@@ -141,7 +200,7 @@ export function RightSidebar() {
             <span className="text-[13.5px] font-bold text-ink-strong">새 메모 작성하기</span>
           </button>
         ) : (
-          <div className="grid max-h-[55vh] grid-cols-1 gap-3 overflow-y-auto sm:grid-cols-2">
+          <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
             {myNotes.map((n) => (
               <div key={n.id} className="flex flex-col gap-1.5 rounded-xl border border-hairline bg-white px-4 py-3 shadow-sm">
                 <div className="flex items-start justify-between gap-2">
@@ -165,7 +224,7 @@ export function RightSidebar() {
             ))}
           </div>
         )}
-      </Dialog>
+      </SlidePanel>
 
       <Dialog open={noteDialogOpen} onClose={() => setNoteDialogOpen(false)} title="새 메모" size="sm">
         <div className="flex flex-col gap-4">
