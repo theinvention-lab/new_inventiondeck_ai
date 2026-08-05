@@ -71,7 +71,8 @@ export function GeneratorPage() {
   }
 
   const gen = project.generator;
-  const canGenerate = gen.selectedCardIds.length >= 2;
+  const selectedCategoryCount = new Set(selectedCards.map((c) => c.category)).size;
+  const canGenerate = selectedCards.length >= 3 && selectedCategoryCount >= 3;
 
   const toggleCard = (id: string) => {
     const exists = gen.selectedCardIds.includes(id);
@@ -86,7 +87,7 @@ export function GeneratorPage() {
 
   const handleGenerate = () => {
     if (!canGenerate) {
-      toast.push('최소 2개의 카드를 선택해주세요.', 'error');
+      toast.push('최소 3개 카테고리에서 카드를 3장 이상 선택해주세요.', 'error');
       return;
     }
     setGenerating(true);
@@ -161,6 +162,7 @@ export function GeneratorPage() {
     <AppShell>
       <div className="pb-36">
       <div className="mx-auto max-w-6xl px-5 py-6">
+        <h1 className="mb-5 text-[20px] font-bold text-ink-strong">Generator</h1>
         <div className="mb-5 grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col rounded-none border border-hairline bg-white p-4">
             <Textarea
@@ -193,7 +195,7 @@ export function GeneratorPage() {
         ) : gen.ideas.length === 0 ? (
           <EmptyState
             title="아직 생성된 아이디어가 없어요"
-            description="카드 선택 탭으로 이동해 2개 이상의 카드를 담고 아이디어를 생성해보세요."
+            description="카드 선택 탭으로 이동해 3개 이상의 카테고리에서 카드를 3장 이상 담고 아이디어를 생성해보세요."
             action={<Button onClick={() => setStep('select')}>카드 선택하러 가기</Button>}
           />
         ) : (

@@ -35,16 +35,16 @@ export function CardDetailDialog({
           <Badge tone="brand" className="w-fit">
             {CATEGORY_LABEL[card.category]}
           </Badge>
-          <h2 className="text-[15.5px] font-bold text-ink-strong">{card.title}</h2>
-          <p className="text-[12px] leading-relaxed text-ink-muted">{card.description}</p>
+          <h2 className="text-[17.5px] font-bold text-ink-strong">{card.title}</h2>
+          <p className="text-[13.5px] leading-relaxed text-ink-muted">{card.description}</p>
           {examples.length > 0 && (
             <div className="flex flex-col gap-1.5">
               {examples.map((example, i) => (
                 <div key={i} className="rounded-lg bg-canvas-sunken p-2.5">
                   {examples.length > 1 && (
-                    <p className="mb-0.5 text-[9.5px] font-bold text-ink-faint">예시 {i + 1}</p>
+                    <p className="mb-0.5 text-[10.5px] font-bold text-ink-faint">예시 {i + 1}</p>
                   )}
-                  <p className="text-[11px] leading-relaxed text-ink-muted">{example}</p>
+                  <p className="text-[12.5px] leading-relaxed text-ink-muted">{example}</p>
                 </div>
               ))}
             </div>

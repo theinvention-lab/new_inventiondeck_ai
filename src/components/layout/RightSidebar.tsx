@@ -48,7 +48,7 @@ function SlidePanel({
       <div
         role="dialog"
         aria-modal="true"
-        className="animate-slide-in-right fixed z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col rounded-2xl border border-hairline bg-white shadow-lg"
+        className="animate-slide-in-right fixed z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col rounded-none border border-hairline bg-white shadow-lg"
         style={{ top: topOffset, right: 104, maxHeight: 'calc(100vh - 40px)' }}
       >
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
