@@ -15,6 +15,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useToast } from '../../components/ui/Toast';
 import { openingMessage, generateAiReply } from '../../ai/chatEngine';
+import { generateTemplateDraft } from '../../ai/templateDraftEngine';
 import { makeId } from '../../lib/id';
 import { relativeTime, formatDateTime } from '../../lib/format';
 import { getBuilderTemplate } from '../../data/builderTemplates';
@@ -193,6 +194,38 @@ export function BuilderPage() {
     return Object.values(values).filter((v) => v && v.trim().length > 0).length;
   };
 
+  const draftTemplateFromStartInfo = () => {
+    const hasStartInfo = [builder.summary, builder.targetCustomer, builder.userProblem, builder.solution].some((v) => v.trim());
+    if (!hasStartInfo) {
+      toast.push('먼저 ① 시작 정보 탭에서 아이디어 내용을 입력해주세요.', 'error');
+      return;
+    }
+    const draft = generateTemplateDraft(builder.activeTemplateId, {
+      summary: builder.summary,
+      targetCustomer: builder.targetCustomer,
+      userProblem: builder.userProblem,
+      solution: builder.solution,
+      evidence: builder.evidence,
+      assumptions: builder.assumptions,
+      currentConcerns: builder.currentConcerns,
+    });
+    const merged = { ...activeTemplateValues };
+    let filledAny = false;
+    for (const [fieldId, value] of Object.entries(draft)) {
+      if (!merged[fieldId] || !merged[fieldId].trim()) {
+        merged[fieldId] = value;
+        filledAny = true;
+      }
+    }
+    if (!filledAny) {
+      toast.push('이미 모든 항목이 작성되어 있어요.');
+      return;
+    }
+    dirtyRef.current = true;
+    updateBuilder(project.id, { templateValues: { ...builder.templateValues, [builder.activeTemplateId]: merged } });
+    toast.push('시작 정보를 바탕으로 초안을 작성했어요.');
+  };
+
   const importFromIdea = (ideaId: string) => {
     const idea = project.generator.ideas.find((i) => i.id === ideaId);
     if (!idea) return;
@@ -223,9 +256,9 @@ export function BuilderPage() {
 
   return (
     <AppShell>
-      <div className="pb-20">
-      <div className="mx-auto max-w-6xl px-5 py-6">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+      <div className="flex h-screen flex-col overflow-hidden">
+      <div className="mx-auto flex w-full min-h-0 max-w-6xl flex-1 flex-col px-5 pt-6">
+        <div className="mb-5 flex shrink-0 flex-wrap items-center justify-between gap-2">
           <h1 className="text-[20px] font-bold text-ink-strong">Builder</h1>
           <div className="flex items-center gap-2">
             {autosaveLabel && (
@@ -249,7 +282,7 @@ export function BuilderPage() {
         </div>
 
         {builder.autosaveStatus === 'error' && (
-          <div className="mb-5 flex items-center gap-2 rounded-xl border border-danger/40 bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <div className="mb-5 flex shrink-0 items-center gap-2 rounded-xl border border-danger/40 bg-danger-soft px-4 py-3 text-[13px] text-danger">
             <span>⚠️</span>
             <p className="flex-1">저장 중 네트워크 오류가 발생했습니다. 변경사항은 남아 있어요 — 다시 시도해주세요.</p>
             <Button size="sm" variant="danger" onClick={handleManualSave}>
@@ -258,8 +291,8 @@ export function BuilderPage() {
           </div>
         )}
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="min-w-0">
+        <div className="grid min-h-0 flex-1 gap-5 pb-24 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="flex min-h-0 min-w-0 flex-col">
             <Tabs
               items={[
                 { id: 'start', label: '① 시작 정보' },
@@ -268,9 +301,10 @@ export function BuilderPage() {
               ]}
               activeId={tab}
               onChange={(id) => setTab(id as typeof tab)}
-              className="mb-5 border-b border-hairline"
+              className="mb-5 shrink-0 border-b border-hairline"
             />
 
+            <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
             {tab === 'start' && (
               <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-white p-5">
                 <div className="flex items-center justify-between">
@@ -308,9 +342,14 @@ export function BuilderPage() {
 
             {tab === 'template' && (
               <div className="flex flex-col gap-4">
-                <p className="text-[13px] text-ink-muted">
-                  사업 특성에 맞는 구체화 템플릿을 선택하고, 항목별로 작성해보세요. 템플릿을 바꿔도 이전에 작성한 내용은 유지됩니다.
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[13px] text-ink-muted">
+                    사업 특성에 맞는 구체화 템플릿을 선택하고, 항목별로 작성해보세요. 템플릿을 바꿔도 이전에 작성한 내용은 유지됩니다.
+                  </p>
+                  <Button variant="outline" size="sm" onClick={draftTemplateFromStartInfo} className="shrink-0">
+                    ✨ 시작 정보로 초안 작성
+                  </Button>
+                </div>
                 <TemplateSelector activeId={builder.activeTemplateId} onSelect={selectTemplate} filledCount={filledCount} />
                 <TemplateFieldsForm template={activeTemplate} values={activeTemplateValues} onChange={updateTemplateField} />
               </div>
@@ -359,20 +398,22 @@ export function BuilderPage() {
                 </div>
               </div>
             )}
+            </div>
           </div>
 
-          <div className="flex flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-140px)]">
-            <div className="mb-3 flex items-center gap-2">
+          <div className="flex min-h-0 flex-col">
+            <div className="mb-3 flex shrink-0 items-center gap-2">
               <p className="text-[13px] font-bold text-ink-strong">✨ AI 채팅 고도화</p>
               {builder.chatMessages.filter((m) => m.role === 'user').length > 0 && (
                 <Badge tone="outline">{builder.chatMessages.filter((m) => m.role === 'user').length}</Badge>
               )}
             </div>
-            <div className="min-h-[420px] flex-1">
+            <div className="min-h-0 flex-1">
               <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
@@ -398,7 +439,6 @@ export function BuilderPage() {
           ))}
         </div>
       </Dialog>
-      </div>
     </AppShell>
   );
 }

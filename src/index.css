@@ -149,6 +149,14 @@ body {
   border-radius: var(--radius-full);
 }
 
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
