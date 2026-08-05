@@ -75,6 +75,7 @@ export function CardLibrary({
           setVisibleCount(PAGE_SIZE);
         }}
         className="sm:w-80"
+        style={{ borderRadius: 0 }}
       />
 
       <div className="flex flex-wrap gap-1.5">

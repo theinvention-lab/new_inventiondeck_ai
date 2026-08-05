@@ -162,16 +162,17 @@ export function GeneratorPage() {
       <div className="pb-36">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
+          <div className="flex flex-col rounded-none border border-hairline bg-white p-4">
             <Textarea
               label="관심 분야 / 해결하고 싶은 문제"
               rows={7}
               placeholder="예: 반려동물을 키우는 1인 가구를 위한 서비스를 만들고 싶어요"
               value={gen.interest}
               onChange={(e) => updateGenerator(project.id, { interest: e.target.value })}
+              style={{ borderRadius: 0 }}
             />
           </div>
-          <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
+          <div className="flex flex-col rounded-none border border-hairline bg-white p-4">
             <p className="mb-3 text-[13px] font-bold text-ink-strong">✨ 추천 카드</p>
             <RecommendedRail cards={recommended} onAdd={toggleCard} onOpenDetail={setDetailCard} />
           </div>
