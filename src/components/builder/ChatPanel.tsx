@@ -35,7 +35,7 @@ export function ChatPanel({
   };
 
   return (
-    <div className="flex h-[560px] flex-col rounded-xl border border-hairline bg-white">
+    <div className="flex h-full flex-col rounded-xl border border-hairline bg-white">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">

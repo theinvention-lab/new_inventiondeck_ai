@@ -261,7 +261,7 @@ export function GeneratorPage() {
         {step === 'select' && (
           <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
             <div className="mx-auto flex max-w-6xl items-center gap-4">
-              <CardTray cards={selectedCards} onRemove={removeCard} />
+              <CardTray cards={selectedCards} categoryCount={selectedCategoryCount} onRemove={removeCard} />
               {genProgress !== null && <ProgressBar value={genProgress} showLabel className="w-40 shrink-0" />}
               <Button size="sm" onClick={handleGenerate} loading={generating} disabled={!canGenerate} className="shrink-0">
                 ✨ AI 아이디어 생성하기

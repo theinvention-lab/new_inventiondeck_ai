@@ -1,12 +1,23 @@
 import type { BizCard } from '../../types';
 import { CATEGORY_COLOR } from '../../data/taxonomy';
 
-export function CardTray({ cards, onRemove }: { cards: BizCard[]; onRemove: (id: string) => void }) {
+export function CardTray({
+  cards,
+  categoryCount,
+  onRemove,
+}: {
+  cards: BizCard[];
+  categoryCount: number;
+  onRemove: (id: string) => void;
+}) {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-3">
       <span className="shrink-0 text-[12.5px] font-bold text-ink-muted">
         선택한 카드 <span className="text-brand">{cards.length}</span>
-        <span className="text-ink-faint">/최소 2</span>
+        <span className="text-ink-faint">/최소 3장</span>
+        <span className="mx-1 text-ink-faint">·</span>
+        카테고리 <span className="text-brand">{categoryCount}</span>
+        <span className="text-ink-faint">/최소 3개</span>
       </span>
       <div className="flex flex-1 items-center gap-1.5 overflow-x-auto py-0.5">
         {cards.length === 0 ? (

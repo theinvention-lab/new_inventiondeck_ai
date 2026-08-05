@@ -34,7 +34,7 @@ export function BuilderPage() {
   const updateBuilder = useProjectStore((s) => s.updateBuilder);
   const updateProject = useProjectStore((s) => s.updateProject);
 
-  const [tab, setTab] = useState<'start' | 'template' | 'chat' | 'criteria'>('start');
+  const [tab, setTab] = useState<'start' | 'template' | 'criteria'>('start');
   const [thinking, setThinking] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [newCriterionName, setNewCriterionName] = useState('');
@@ -203,7 +203,7 @@ export function BuilderPage() {
       solution: idea.solution,
     });
     setShowImportDialog(false);
-    toast.push('Generator 결과를 불러왔습니다.');
+    toast.push('프로젝트 정보를 불러왔습니다.');
   };
 
   const sendToPlanner = () => {
@@ -226,10 +226,7 @@ export function BuilderPage() {
       <div className="pb-20">
       <div className="mx-auto max-w-6xl px-5 py-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h1 className="text-[20px] font-bold text-ink-strong">Builder · 아이디어 검증 및 고도화</h1>
-            <p className="mt-1 text-[13px] text-ink-muted">AI 채팅과 점검 기준으로 아이디어의 빈틈을 함께 메워보세요.</p>
-          </div>
+          <h1 className="text-[20px] font-bold text-ink-strong">Builder</h1>
           <div className="flex items-center gap-2">
             {autosaveLabel && (
               <span
@@ -261,110 +258,121 @@ export function BuilderPage() {
           </div>
         )}
 
-        <Tabs
-          items={[
-            { id: 'start', label: '① 시작 정보' },
-            { id: 'template', label: '② 구체화 템플릿' },
-            { id: 'chat', label: '③ AI 채팅 고도화', badge: builder.chatMessages.filter((m) => m.role === 'user').length },
-            { id: 'criteria', label: '④ 점검 기준' },
-          ]}
-          activeId={tab}
-          onChange={(id) => setTab(id as typeof tab)}
-          className="mb-5 border-b border-hairline"
-        />
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="min-w-0">
+            <Tabs
+              items={[
+                { id: 'start', label: '① 시작 정보' },
+                { id: 'template', label: '② 구체화 템플릿' },
+                { id: 'criteria', label: '③ 점검 기준' },
+              ]}
+              activeId={tab}
+              onChange={(id) => setTab(id as typeof tab)}
+              className="mb-5 border-b border-hairline"
+            />
 
-        {tab === 'start' && (
-          <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-white p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-[13.5px] font-bold text-ink-strong">아이디어 시작 정보</p>
-              {project.generator.ideas.length > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
-                  Generator 결과 불러오기
-                </Button>
-              )}
-            </div>
-            <Textarea label="아이디어 요약" rows={2} value={builder.summary} onChange={(e) => markDirty({ summary: e.target.value })} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Textarea label="타겟 고객" rows={2} value={builder.targetCustomer} onChange={(e) => markDirty({ targetCustomer: e.target.value })} />
-              <Textarea label="사용자 문제" rows={2} value={builder.userProblem} onChange={(e) => markDirty({ userProblem: e.target.value })} />
-              <Textarea label="해결 방안" rows={2} value={builder.solution} onChange={(e) => markDirty({ solution: e.target.value })} />
-              <Textarea label="보유 근거" rows={2} value={builder.evidence} onChange={(e) => markDirty({ evidence: e.target.value })} />
-              <Textarea label="핵심 가정" rows={2} value={builder.assumptions} onChange={(e) => markDirty({ assumptions: e.target.value })} />
-              <Textarea label="현재 고민" rows={2} value={builder.currentConcerns} onChange={(e) => markDirty({ currentConcerns: e.target.value })} />
-            </div>
+            {tab === 'start' && (
+              <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-white p-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[13.5px] font-bold text-ink-strong">아이디어 시작 정보</p>
+                  {project.generator.ideas.length > 0 && (
+                    <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
+                      프로젝트 불러오기
+                    </Button>
+                  )}
+                </div>
+                <Textarea label="아이디어 요약" rows={2} value={builder.summary} onChange={(e) => markDirty({ summary: e.target.value })} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Textarea label="타겟 고객" rows={2} value={builder.targetCustomer} onChange={(e) => markDirty({ targetCustomer: e.target.value })} />
+                  <Textarea label="사용자 문제" rows={2} value={builder.userProblem} onChange={(e) => markDirty({ userProblem: e.target.value })} />
+                  <Textarea label="해결 방안" rows={2} value={builder.solution} onChange={(e) => markDirty({ solution: e.target.value })} />
+                  <Textarea label="보유 근거" rows={2} value={builder.evidence} onChange={(e) => markDirty({ evidence: e.target.value })} />
+                  <Textarea label="핵심 가정" rows={2} value={builder.assumptions} onChange={(e) => markDirty({ assumptions: e.target.value })} />
+                  <Textarea label="현재 고민" rows={2} value={builder.currentConcerns} onChange={(e) => markDirty({ currentConcerns: e.target.value })} />
+                </div>
 
-            {builder.versions.length > 0 && (
-              <div className="mt-2 border-t border-hairline pt-3">
-                <p className="mb-2 text-[12.5px] font-bold text-ink-muted">저장 이력</p>
-                <ul className="flex flex-col gap-1">
-                  {builder.versions.slice(0, 5).map((v) => (
-                    <li key={v.id} className="text-[12px] text-ink-faint">
-                      {v.label} · {v.savedBy} · {formatDateTime(v.savedAt)}
-                    </li>
-                  ))}
-                </ul>
+                {builder.versions.length > 0 && (
+                  <div className="mt-2 border-t border-hairline pt-3">
+                    <p className="mb-2 text-[12.5px] font-bold text-ink-muted">저장 이력</p>
+                    <ul className="flex flex-col gap-1">
+                      {builder.versions.slice(0, 5).map((v) => (
+                        <li key={v.id} className="text-[12px] text-ink-faint">
+                          {v.label} · {v.savedBy} · {formatDateTime(v.savedAt)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tab === 'template' && (
+              <div className="flex flex-col gap-4">
+                <p className="text-[13px] text-ink-muted">
+                  사업 특성에 맞는 구체화 템플릿을 선택하고, 항목별로 작성해보세요. 템플릿을 바꿔도 이전에 작성한 내용은 유지됩니다.
+                </p>
+                <TemplateSelector activeId={builder.activeTemplateId} onSelect={selectTemplate} filledCount={filledCount} />
+                <TemplateFieldsForm template={activeTemplate} values={activeTemplateValues} onChange={updateTemplateField} />
+              </div>
+            )}
+
+            {tab === 'criteria' && (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between rounded-xl border border-hairline bg-white p-4">
+                  <div>
+                    <p className="text-[13.5px] font-bold text-ink-strong">점검 기준 충족률</p>
+                    <p className="text-[12px] text-ink-muted">충족 상태는 직접 판단하여 표시해주세요.</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-32 overflow-hidden rounded-full bg-hairline">
+                      <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${criteriaProgress}%` }} />
+                    </div>
+                    <span className="text-[13px] font-bold text-brand-strong">{criteriaProgress}%</span>
+                  </div>
+                </div>
+
+                {builder.criteria.map((c) => (
+                  <CriterionCard
+                    key={c.id}
+                    criterion={c}
+                    onChange={(patch) => patchCriterion(c.id, patch)}
+                    onRemove={c.custom ? () => removeCriterion(c.id) : undefined}
+                    draggable
+                    dragging={draggedCriterionId === c.id}
+                    onDragStart={() => setDraggedCriterionId(c.id)}
+                    onDragOver={() => reorderCriteria(c.id)}
+                    onDrop={() => setDraggedCriterionId(null)}
+                    onDragEnd={() => setDraggedCriterionId(null)}
+                  />
+                ))}
+
+                <div className="flex items-center gap-2 rounded-xl border border-dashed border-hairline-strong bg-white p-3">
+                  <input
+                    value={newCriterionName}
+                    onChange={(e) => setNewCriterionName(e.target.value)}
+                    placeholder="새로운 점검 기준 이름 (예: 규제 리스크)"
+                    className="h-9 flex-1 rounded-lg border border-hairline-strong bg-white px-3 text-[13px] outline-none focus:border-brand"
+                  />
+                  <Button size="sm" variant="outline" onClick={addCriterion}>
+                    + 기준 추가
+                  </Button>
+                </div>
               </div>
             )}
           </div>
-        )}
 
-        {tab === 'template' && (
-          <div className="flex flex-col gap-4">
-            <p className="text-[13px] text-ink-muted">
-              사업 특성에 맞는 구체화 템플릿을 선택하고, 항목별로 작성해보세요. 템플릿을 바꿔도 이전에 작성한 내용은 유지됩니다.
-            </p>
-            <TemplateSelector activeId={builder.activeTemplateId} onSelect={selectTemplate} filledCount={filledCount} />
-            <TemplateFieldsForm template={activeTemplate} values={activeTemplateValues} onChange={updateTemplateField} />
-          </div>
-        )}
-
-        {tab === 'chat' && (
-          <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
-        )}
-
-        {tab === 'criteria' && (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between rounded-xl border border-hairline bg-white p-4">
-              <div>
-                <p className="text-[13.5px] font-bold text-ink-strong">점검 기준 충족률</p>
-                <p className="text-[12px] text-ink-muted">충족 상태는 직접 판단하여 표시해주세요.</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-32 overflow-hidden rounded-full bg-hairline">
-                  <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${criteriaProgress}%` }} />
-                </div>
-                <span className="text-[13px] font-bold text-brand-strong">{criteriaProgress}%</span>
-              </div>
+          <div className="flex flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-140px)]">
+            <div className="mb-3 flex items-center gap-2">
+              <p className="text-[13px] font-bold text-ink-strong">✨ AI 채팅 고도화</p>
+              {builder.chatMessages.filter((m) => m.role === 'user').length > 0 && (
+                <Badge tone="outline">{builder.chatMessages.filter((m) => m.role === 'user').length}</Badge>
+              )}
             </div>
-
-            {builder.criteria.map((c) => (
-              <CriterionCard
-                key={c.id}
-                criterion={c}
-                onChange={(patch) => patchCriterion(c.id, patch)}
-                onRemove={c.custom ? () => removeCriterion(c.id) : undefined}
-                draggable
-                dragging={draggedCriterionId === c.id}
-                onDragStart={() => setDraggedCriterionId(c.id)}
-                onDragOver={() => reorderCriteria(c.id)}
-                onDrop={() => setDraggedCriterionId(null)}
-                onDragEnd={() => setDraggedCriterionId(null)}
-              />
-            ))}
-
-            <div className="flex items-center gap-2 rounded-xl border border-dashed border-hairline-strong bg-white p-3">
-              <input
-                value={newCriterionName}
-                onChange={(e) => setNewCriterionName(e.target.value)}
-                placeholder="새로운 점검 기준 이름 (예: 규제 리스크)"
-                className="h-9 flex-1 rounded-lg border border-hairline-strong bg-white px-3 text-[13px] outline-none focus:border-brand"
-              />
-              <Button size="sm" variant="outline" onClick={addCriterion}>
-                + 기준 추가
-              </Button>
+            <div className="min-h-[420px] flex-1">
+              <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
@@ -376,7 +384,7 @@ export function BuilderPage() {
         </div>
       </div>
 
-      <Dialog open={showImportDialog} onClose={() => setShowImportDialog(false)} title="Generator 결과 불러오기" size="md">
+      <Dialog open={showImportDialog} onClose={() => setShowImportDialog(false)} title="프로젝트 불러오기" size="md">
         <div className="flex flex-col gap-2">
           {project.generator.ideas.map((idea) => (
             <button
