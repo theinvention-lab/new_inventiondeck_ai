@@ -18,7 +18,7 @@ export function RecommendedRail({
     );
   }
   return (
-    <div className="scrollbar-hide flex max-h-[220px] flex-col gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-col gap-2">
       {cards.map((card) => (
         <div key={card.id} className="flex items-center gap-2.5 rounded-none border border-hairline bg-white p-2.5">
           <button onClick={() => onOpenDetail(card)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
