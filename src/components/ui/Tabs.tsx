@@ -13,7 +13,7 @@ interface TabsProps {
 
 export function Tabs({ items, activeId, onChange, className = '' }: TabsProps) {
   return (
-    <div className={`flex items-center gap-1 overflow-x-auto ${className}`} role="tablist">
+    <div className={`scrollbar-hide flex items-center gap-1 overflow-x-auto ${className}`} role="tablist">
       {items.map((item) => {
         const active = item.id === activeId;
         return (
