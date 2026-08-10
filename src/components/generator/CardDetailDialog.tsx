@@ -32,9 +32,12 @@ export function CardDetailDialog({
     <Dialog open={!!card} onClose={onClose} size="md">
       {card && (
         <div className="flex flex-col gap-2.5">
-          <Badge tone="brand" className="w-fit">
-            {CATEGORY_LABEL[card.category]}
-          </Badge>
+          <div className="flex items-center gap-1.5">
+            <Badge tone="brand" className="w-fit">
+              {CATEGORY_LABEL[card.category]}
+            </Badge>
+            {selected && <Badge tone="outline">담은 카드</Badge>}
+          </div>
           <h2 className="text-[17.5px] font-bold text-ink-strong">{card.title}</h2>
           <p className="text-[13.5px] leading-relaxed text-ink-muted">{card.description}</p>
           {examples.length > 0 && (
@@ -60,7 +63,7 @@ export function CardDetailDialog({
                 onClose();
               }}
             >
-              {selected ? '선택 해제' : '조합에 담기'}
+              담기
             </Button>
           </div>
         </div>

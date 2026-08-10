@@ -14,7 +14,7 @@ interface DialogProps {
 
 const SIZE_CLASS: Record<'sm' | 'md' | 'lg', string> = {
   sm: 'max-w-sm',
-  md: 'max-w-md',
+  md: 'max-w-lg',
   lg: 'max-w-2xl',
 };
 

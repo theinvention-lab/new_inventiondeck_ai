@@ -160,10 +160,10 @@ export function GeneratorPage() {
 
   return (
     <AppShell>
-      <div className="pb-36">
-      <div className="mx-auto max-w-6xl px-5 py-6">
-        <h1 className="mb-5 text-[20px] font-bold text-ink-strong">Generator</h1>
-        <div className="mb-5 grid gap-4 sm:grid-cols-2">
+      <div className="flex h-screen flex-col overflow-hidden">
+      <div className="mx-auto flex w-full min-h-0 max-w-6xl flex-1 flex-col px-5 pt-6">
+        <h1 className="mb-5 shrink-0 text-[20px] font-bold text-ink-strong">Generator</h1>
+        <div className="mb-5 grid shrink-0 gap-4 sm:grid-cols-2">
           <div className="flex flex-col rounded-none border border-hairline bg-white p-4">
             <Textarea
               label="관심 분야 / 해결하고 싶은 문제"
@@ -187,9 +187,10 @@ export function GeneratorPage() {
           ]}
           activeId={step}
           onChange={(id) => setStep(id as 'select' | 'results')}
-          className="mb-5 border-b border-hairline"
+          className="mb-5 shrink-0 border-b border-hairline"
         />
 
+        <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto pb-24">
         {step === 'select' ? (
           <CardLibrary selectedIds={gen.selectedCardIds} onToggle={toggleCard} onOpenDetail={setDetailCard} />
         ) : gen.ideas.length === 0 ? (
@@ -257,19 +258,21 @@ export function GeneratorPage() {
             </Button>
           </div>
         )}
-
-        {step === 'select' && (
-          <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
-            <div className="mx-auto flex max-w-6xl items-center gap-4">
-              <CardTray cards={selectedCards} categoryCount={selectedCategoryCount} onRemove={removeCard} />
-              {genProgress !== null && <ProgressBar value={genProgress} showLabel className="w-40 shrink-0" />}
-              <Button size="sm" onClick={handleGenerate} loading={generating} disabled={!canGenerate} className="shrink-0">
-                ✨ AI 아이디어 생성하기
-              </Button>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
+      </div>
+
+      {step === 'select' && (
+        <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
+          <div className="mx-auto flex max-w-6xl items-center gap-4">
+            <CardTray cards={selectedCards} categoryCount={selectedCategoryCount} onRemove={removeCard} />
+            {genProgress !== null && <ProgressBar value={genProgress} showLabel className="w-40 shrink-0" />}
+            <Button size="sm" onClick={handleGenerate} loading={generating} disabled={!canGenerate} className="shrink-0">
+              ✨ AI 아이디어 생성하기
+            </Button>
+          </div>
+        </div>
+      )}
 
       <CardDetailDialog
         card={detailCard}
@@ -277,7 +280,6 @@ export function GeneratorPage() {
         onClose={() => setDetailCard(null)}
         onToggle={() => detailCard && toggleCard(detailCard.id)}
       />
-      </div>
     </AppShell>
   );
 }

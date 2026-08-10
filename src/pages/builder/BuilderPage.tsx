@@ -402,15 +402,7 @@ export function BuilderPage() {
           </div>
 
           <div className="flex min-h-0 flex-col">
-            <div className="mb-3 flex shrink-0 items-center gap-2">
-              <p className="text-[13px] font-bold text-ink-strong">✨ AI 채팅 고도화</p>
-              {builder.chatMessages.filter((m) => m.role === 'user').length > 0 && (
-                <Badge tone="outline">{builder.chatMessages.filter((m) => m.role === 'user').length}</Badge>
-              )}
-            </div>
-            <div className="min-h-0 flex-1">
-              <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
-            </div>
+            <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
           </div>
         </div>
       </div>

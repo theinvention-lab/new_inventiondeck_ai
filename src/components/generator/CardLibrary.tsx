@@ -67,43 +67,44 @@ export function CardLibrary({
 
   return (
     <div className="flex flex-col gap-4">
-      <Input
-        placeholder="키워드로 카드 검색 (예: 헬스케어, 구독, 시니어…)"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setVisibleCount(PAGE_SIZE);
-        }}
-        className="sm:w-80"
-        style={{ borderRadius: 0 }}
-      />
-
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          onClick={() => {
-            setCategory('all');
-            setVisibleCount(PAGE_SIZE);
-          }}
-          className={`rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors ${
-            category === 'all' ? 'bg-ink-strong text-white' : 'bg-canvas-sunken text-ink-muted hover:bg-hairline'
-          }`}
-        >
-          전체 {allCards.length.toLocaleString()}
-        </button>
-        {CATEGORY_ORDER.map((cat) => (
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-1.5">
           <button
-            key={cat}
             onClick={() => {
-              setCategory(cat);
+              setCategory('all');
               setVisibleCount(PAGE_SIZE);
             }}
             className={`rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors ${
-              category === cat ? 'bg-ink-strong text-white' : 'bg-canvas-sunken text-ink-muted hover:bg-hairline'
+              category === 'all' ? 'bg-ink-strong text-white' : 'bg-canvas-sunken text-ink-muted hover:bg-hairline'
             }`}
           >
-            {CATEGORY_LABEL[cat]}
+            전체 {allCards.length.toLocaleString()}
           </button>
-        ))}
+          {CATEGORY_ORDER.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                setCategory(cat);
+                setVisibleCount(PAGE_SIZE);
+              }}
+              className={`rounded-full px-3 py-1.5 text-[12.5px] font-semibold transition-colors ${
+                category === cat ? 'bg-ink-strong text-white' : 'bg-canvas-sunken text-ink-muted hover:bg-hairline'
+              }`}
+            >
+              {CATEGORY_LABEL[cat]}
+            </button>
+          ))}
+        </div>
+        <Input
+          placeholder="키워드로 카드 검색 (예: 헬스케어, 구독, 시니어…)"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setVisibleCount(PAGE_SIZE);
+          }}
+          className="w-full sm:w-72 sm:shrink-0"
+          style={{ borderRadius: 0 }}
+        />
       </div>
 
       <p className="text-[12.5px] text-ink-faint">{filtered.length.toLocaleString()}장의 카드가 검색되었습니다</p>
