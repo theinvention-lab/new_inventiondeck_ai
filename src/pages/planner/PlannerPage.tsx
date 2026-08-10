@@ -155,9 +155,9 @@ export function PlannerPage() {
 
   return (
     <AppShell>
-      <div className="flex h-screen flex-col overflow-hidden">
-      <div className="mx-auto flex w-full min-h-0 max-w-6xl flex-1 flex-col px-5 pt-6">
-        <div className="mb-5 flex shrink-0 flex-wrap items-center justify-between gap-2">
+      <div className="pb-20">
+      <div className="mx-auto max-w-6xl px-5 py-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h1 className="text-[20px] font-bold text-ink-strong">Planner · 사업계획서 &amp; IR Deck</h1>
             <p className="mt-1 text-[13px] text-ink-muted">검증된 내용을 바탕으로 문서와 슬라이드를 구조화하고 내보냅니다.</p>
@@ -168,7 +168,7 @@ export function PlannerPage() {
         </div>
 
         {missingFields.length > 0 && (
-          <div className="mb-5 flex shrink-0 items-start gap-2 rounded-none border border-warning/40 bg-warning-soft px-4 py-3 text-[13px] text-[#8a5a05]">
+          <div className="mb-5 flex items-start gap-2 rounded-none border border-warning/40 bg-warning-soft px-4 py-3 text-[13px] text-[#8a5a05]">
             <span>⚠️</span>
             <p>
               Builder 단계에서 다음 항목이 비어 있어요: <strong>{missingFields.join(', ')}</strong>. 채워두면 더 구체적인
@@ -188,10 +188,9 @@ export function PlannerPage() {
           ]}
           activeId={tab}
           onChange={(id) => setTab(id as PlannerTab)}
-          className="mb-5 shrink-0 border-b border-hairline"
+          className="mb-5 border-b border-hairline"
         />
 
-        <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto pb-6">
         {tab === 'bizplan' &&
           (planner.bizPlanSections.length === 0 ? (
             <div className="flex flex-col gap-3">
@@ -299,8 +298,6 @@ export function PlannerPage() {
             <TemplatePicker activeId={planner.designTemplateId} onSelect={(id) => updatePlanner(project.id, { designTemplateId: id })} />
           </div>
         )}
-        </div>
-      </div>
       </div>
 
       <Dialog open={previewOpen === 'bizplan'} onClose={() => setPreviewOpen(null)} size="lg" title="사업계획서 미리보기">
@@ -309,6 +306,7 @@ export function PlannerPage() {
       <Dialog open={previewOpen === 'pitch'} onClose={() => setPreviewOpen(null)} size="lg" title="IR Deck 미리보기">
         <PitchDeckPreview slides={planner.pitchSlides} template={template} />
       </Dialog>
+      </div>
     </AppShell>
   );
 }

@@ -256,9 +256,9 @@ export function BuilderPage() {
 
   return (
     <AppShell>
-      <div className="flex h-screen flex-col overflow-hidden">
-      <div className="mx-auto flex w-full min-h-0 max-w-6xl flex-1 flex-col px-5 pt-6">
-        <div className="mb-5 flex shrink-0 flex-wrap items-center justify-between gap-2">
+      <div className="pb-20">
+      <div className="mx-auto max-w-6xl px-5 py-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-[20px] font-bold text-ink-strong">Builder</h1>
           <div className="flex items-center gap-2">
             {autosaveLabel && (
@@ -282,7 +282,7 @@ export function BuilderPage() {
         </div>
 
         {builder.autosaveStatus === 'error' && (
-          <div className="mb-5 flex shrink-0 items-center gap-2 rounded-none border border-danger/40 bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <div className="mb-5 flex items-center gap-2 rounded-none border border-danger/40 bg-danger-soft px-4 py-3 text-[13px] text-danger">
             <span>⚠️</span>
             <p className="flex-1">저장 중 네트워크 오류가 발생했습니다. 변경사항은 남아 있어요 — 다시 시도해주세요.</p>
             <Button size="sm" variant="danger" onClick={handleManualSave}>
@@ -291,8 +291,8 @@ export function BuilderPage() {
           </div>
         )}
 
-        <div className="grid min-h-0 flex-1 gap-5 pb-24 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="flex min-h-0 min-w-0 flex-col">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="min-w-0">
             <Tabs
               items={[
                 { id: 'start', label: '① 시작 정보' },
@@ -301,10 +301,9 @@ export function BuilderPage() {
               ]}
               activeId={tab}
               onChange={(id) => setTab(id as typeof tab)}
-              className="mb-5 shrink-0 border-b border-hairline"
+              className="mb-5 border-b border-hairline"
             />
 
-            <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
             {tab === 'start' && (
               <div className="flex flex-col gap-4 rounded-none border border-hairline bg-white p-5">
                 <div className="flex items-center justify-between">
@@ -398,14 +397,12 @@ export function BuilderPage() {
                 </div>
               </div>
             )}
-            </div>
           </div>
 
-          <div className="flex min-h-0 flex-col">
+          <div className="flex flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-140px)]">
             <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
           </div>
         </div>
-      </div>
       </div>
 
       <div className={`fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-white/95 px-5 py-3 backdrop-blur left-[88px]`}>
@@ -431,6 +428,7 @@ export function BuilderPage() {
           ))}
         </div>
       </Dialog>
+      </div>
     </AppShell>
   );
 }
