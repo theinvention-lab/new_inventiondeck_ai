@@ -8,7 +8,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
         <div className="mb-8 flex justify-center">
           <Logo />
         </div>
-        <div className="rounded-2xl border border-hairline bg-white p-7 shadow-sm animate-fade-in-up">
+        <div className="rounded-none border border-hairline bg-white p-7 shadow-sm animate-fade-in-up">
           <h1 className="text-[19px] font-bold text-ink-strong">{title}</h1>
           {subtitle && <p className="mt-1.5 text-[13px] text-ink-muted">{subtitle}</p>}
           <div className="mt-6">{children}</div>

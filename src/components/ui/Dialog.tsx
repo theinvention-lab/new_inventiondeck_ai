@@ -36,7 +36,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative w-full ${SIZE_CLASS[size]} rounded-2xl bg-white p-6 shadow-lg animate-fade-in-up`}
+        className={`relative w-full ${SIZE_CLASS[size]} rounded-none bg-white p-6 shadow-lg animate-fade-in-up`}
       >
         {title && <h2 className="text-[17px] font-bold text-ink-strong">{title}</h2>}
         {description && <p className="mt-1.5 text-[13px] leading-relaxed text-ink-muted">{description}</p>}

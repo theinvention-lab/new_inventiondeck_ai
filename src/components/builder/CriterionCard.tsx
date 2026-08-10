@@ -81,7 +81,7 @@ export function CriterionCard({
         onDrop?.();
       }}
       onDragEnd={onDragEnd}
-      className={`rounded-xl border bg-white p-4 transition-opacity ${dragging ? 'opacity-40' : 'opacity-100'} border-hairline`}
+      className={`rounded-none border bg-white p-4 transition-opacity ${dragging ? 'opacity-40' : 'opacity-100'} border-hairline`}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex items-start gap-2">
@@ -189,7 +189,7 @@ export function CriterionCard({
         {criterion.attachments.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {criterion.attachments.map((a) => (
-              <div key={a.id} className="flex items-center gap-1.5 rounded-lg border border-hairline bg-canvas-sunken px-2 py-1.5">
+              <div key={a.id} className="flex items-center gap-1.5 rounded-none border border-hairline bg-canvas-sunken px-2 py-1.5">
                 {a.isImage ? (
                   <img src={a.dataUrl} alt={a.name} className="h-6 w-6 rounded object-cover" />
                 ) : (
@@ -220,7 +220,7 @@ export function CriterionCard({
       </div>
 
       {showRegenerate && (
-        <div className="mt-2 flex items-center gap-2 rounded-lg bg-canvas-sunken p-2.5">
+        <div className="mt-2 flex items-center gap-2 rounded-none bg-canvas-sunken p-2.5">
           <input
             value={direction}
             onChange={(e) => setDirection(e.target.value)}

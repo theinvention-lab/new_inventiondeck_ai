@@ -19,7 +19,7 @@ export function TemplateSelector({
           <button
             key={t.id}
             onClick={() => onSelect(t.id)}
-            className={`flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all ${
+            className={`flex flex-col items-start gap-2 rounded-none border p-4 text-left transition-all ${
               active ? 'border-brand bg-brand-soft/40 ring-2 ring-brand/20' : 'border-hairline bg-white hover:border-ink-muted/40'
             }`}
           >

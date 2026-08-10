@@ -37,7 +37,7 @@ export function HomeChatPanel({
 
   return (
     <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
-      <div className="flex h-full min-h-0 flex-col rounded-2xl border border-hairline bg-white shadow-sm">
+      <div className="flex h-full min-h-0 flex-col rounded-none border border-hairline bg-white shadow-sm">
         <div className="flex shrink-0 items-center gap-2.5 border-b border-hairline px-4 py-3">
           <span
             className="flex h-8 w-8 items-center justify-center rounded-lg text-[15px]"
@@ -54,7 +54,7 @@ export function HomeChatPanel({
           {messages.map((m) => (
             <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
+                className={`max-w-[85%] rounded-none px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
                   m.role === 'user' ? 'text-white' : 'bg-canvas-sunken text-ink'
                 }`}
                 style={m.role === 'user' ? { backgroundColor: copy.accent } : undefined}
@@ -65,7 +65,7 @@ export function HomeChatPanel({
           ))}
           {thinking && (
             <div className="flex justify-start">
-              <div className="flex items-center gap-1 rounded-2xl bg-canvas-sunken px-3.5 py-2.5">
+              <div className="flex items-center gap-1 rounded-none bg-canvas-sunken px-3.5 py-2.5">
                 <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-ink-faint" />
                 <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-ink-faint [animation-delay:0.15s]" />
                 <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-ink-faint [animation-delay:0.3s]" />

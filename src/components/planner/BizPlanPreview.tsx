@@ -3,7 +3,7 @@ import type { DesignTemplate } from '../../data/designTemplates';
 
 export function BizPlanPreview({ title, sections, template }: { title: string; sections: PlanSection[]; template: DesignTemplate }) {
   return (
-    <div className="mx-auto max-w-2xl overflow-hidden rounded-xl border border-hairline shadow-sm" style={{ backgroundColor: template.bg }}>
+    <div className="mx-auto max-w-2xl overflow-hidden rounded-none border border-hairline shadow-sm" style={{ backgroundColor: template.bg }}>
       <div className="px-8 py-10" style={{ backgroundColor: template.primary }}>
         <p className="text-[11px] font-bold uppercase tracking-widest text-white/80">Business Plan</p>
         <h1 className="mt-2 text-[26px] font-bold text-white">{title || '사업계획서'}</h1>

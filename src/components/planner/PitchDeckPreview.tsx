@@ -11,7 +11,7 @@ export function PitchDeckPreview({ slides, template }: { slides: PitchSlide[]; t
   return (
     <div className="flex flex-col items-center gap-3">
       <div
-        className="flex aspect-video w-full max-w-2xl flex-col justify-center overflow-hidden rounded-xl border border-hairline p-10 shadow-sm"
+        className="flex aspect-video w-full max-w-2xl flex-col justify-center overflow-hidden rounded-none border border-hairline p-10 shadow-sm"
         style={{ backgroundColor: template.bg }}
       >
         {idx === 0 ? (

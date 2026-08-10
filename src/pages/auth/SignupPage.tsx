@@ -117,7 +117,7 @@ export function SignupPage() {
           error={errors.confirm}
         />
 
-        <div className="mt-1 flex flex-col gap-2 rounded-lg bg-canvas-sunken p-3">
+        <div className="mt-1 flex flex-col gap-2 rounded-none bg-canvas-sunken p-3">
           <label className="flex items-center gap-2 text-[13px] text-ink">
             <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} className="h-4 w-4 accent-[#e4002b]" />
             (필수) 서비스 이용약관에 동의합니다

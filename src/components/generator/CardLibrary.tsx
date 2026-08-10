@@ -109,7 +109,7 @@ export function CardLibrary({
       <p className="text-[12.5px] text-ink-faint">{filtered.length.toLocaleString()}장의 카드가 검색되었습니다</p>
 
       {visible.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-hairline-strong bg-white py-14 text-center text-[13.5px] text-ink-muted">
+        <div className="rounded-none border border-dashed border-hairline-strong bg-white py-14 text-center text-[13.5px] text-ink-muted">
           조건에 맞는 카드가 없습니다. 검색어나 카테고리를 조정해보세요.
         </div>
       ) : (

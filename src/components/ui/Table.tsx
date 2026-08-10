@@ -2,7 +2,7 @@ import type { HTMLAttributes } from 'react';
 
 export function Table({ className = '', children, ...rest }: HTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-hairline">
+    <div className="w-full overflow-x-auto rounded-none border border-hairline">
       <table className={`w-full border-collapse text-left text-[13px] ${className}`} {...rest}>
         {children}
       </table>

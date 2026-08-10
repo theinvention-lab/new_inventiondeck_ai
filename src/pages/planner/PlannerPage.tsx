@@ -168,7 +168,7 @@ export function PlannerPage() {
         </div>
 
         {missingFields.length > 0 && (
-          <div className="mb-5 flex items-start gap-2 rounded-xl border border-warning/40 bg-warning-soft px-4 py-3 text-[13px] text-[#8a5a05]">
+          <div className="mb-5 flex items-start gap-2 rounded-none border border-warning/40 bg-warning-soft px-4 py-3 text-[13px] text-[#8a5a05]">
             <span>⚠️</span>
             <p>
               Builder 단계에서 다음 항목이 비어 있어요: <strong>{missingFields.join(', ')}</strong>. 채워두면 더 구체적인

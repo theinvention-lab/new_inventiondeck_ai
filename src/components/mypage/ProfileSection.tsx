@@ -73,7 +73,7 @@ export function ProfileSection({ user }: { user: User }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="rounded-2xl border border-hairline bg-white p-6">
+      <div className="rounded-none border border-hairline bg-white p-6">
         <h2 className="mb-4 text-[16px] font-bold text-ink-strong">프로필 수정</h2>
 
         <div className="mb-5 flex items-center gap-4">
@@ -138,7 +138,7 @@ export function ProfileSection({ user }: { user: User }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-hairline bg-white p-6">
+      <div className="rounded-none border border-hairline bg-white p-6">
         <h2 className="mb-1 text-[16px] font-bold text-ink-strong">마케팅 정보 수신 동의</h2>
         <p className="mb-4 text-[12.5px] text-ink-muted">신규 기능, 이벤트, 프로모션 소식을 이메일로 받아보세요.</p>
         <label className="flex items-center gap-2.5 text-[13.5px] text-ink">

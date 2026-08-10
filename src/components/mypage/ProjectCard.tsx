@@ -37,7 +37,7 @@ export function ProjectCard({
     <div
       draggable={draggable}
       onDragStart={onDragStart}
-      className="flex flex-col gap-3 rounded-xl border border-hairline bg-white p-4 transition-shadow hover:shadow-md"
+      className="flex flex-col gap-3 rounded-none border border-hairline bg-white p-4 transition-shadow hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-2">
         <button onClick={() => navigate(`/project/${project.id}/${STAGE_PATH[project.stage]}`)} className="text-left">

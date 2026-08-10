@@ -14,7 +14,7 @@ export function TemplatePicker({
         <button
           key={t.id}
           onClick={() => onSelect(t.id)}
-          className={`flex flex-col gap-3 rounded-xl border p-4 text-left transition-all ${
+          className={`flex flex-col gap-3 rounded-none border p-4 text-left transition-all ${
             activeId === t.id ? 'border-brand ring-2 ring-brand/20' : 'border-hairline hover:border-ink-muted/40'
           }`}
         >

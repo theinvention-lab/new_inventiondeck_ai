@@ -16,7 +16,7 @@ export function PitchSlideEditor({
   onChange: (patch: Partial<PitchSlide>) => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-white p-4">
+    <div className="flex flex-col gap-3 rounded-none border border-hairline bg-white p-4">
       <input
         value={slide.title}
         onChange={(e) => onChange({ title: e.target.value })}

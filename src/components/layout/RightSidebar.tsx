@@ -169,7 +169,7 @@ export function RightSidebar() {
         {active.length === 0 ? (
           <button
             onClick={handleCreateProject}
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-strong px-6 py-12 text-center transition-colors hover:border-brand"
+            className="flex w-full flex-col items-center justify-center gap-2 rounded-none border border-dashed border-hairline-strong px-6 py-12 text-center transition-colors hover:border-brand"
           >
             <span className="text-2xl">➕</span>
             <span className="text-[13.5px] font-bold text-ink-strong">새로운 프로젝트를 생성하기</span>
@@ -181,7 +181,7 @@ export function RightSidebar() {
               return (
                 <div
                   key={p.id}
-                  className="group relative flex flex-col gap-1 rounded-xl border border-hairline bg-white px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
+                  className="group relative flex flex-col gap-1 rounded-none border border-hairline bg-white px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
                 >
                   <button
                     onClick={() => setConfirmDeleteId(p.id)}
@@ -251,7 +251,7 @@ export function RightSidebar() {
             {myNotes.length === 0 ? (
               <button
                 onClick={openNewNoteForm}
-                className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-hairline-strong px-6 py-12 text-center transition-colors hover:border-brand"
+                className="flex w-full flex-col items-center justify-center gap-2 rounded-none border border-dashed border-hairline-strong px-6 py-12 text-center transition-colors hover:border-brand"
               >
                 <span className="text-2xl">📝</span>
                 <span className="text-[13.5px] font-bold text-ink-strong">새 메모 작성하기</span>
@@ -259,7 +259,7 @@ export function RightSidebar() {
             ) : (
               <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto">
                 {myNotes.map((n) => (
-                  <div key={n.id} className="flex flex-col gap-1.5 rounded-xl border border-hairline bg-white px-4 py-3 shadow-sm">
+                  <div key={n.id} className="flex flex-col gap-1.5 rounded-none border border-hairline bg-white px-4 py-3 shadow-sm">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="truncate text-[13.5px] font-bold text-ink-strong">{n.title}</h3>
                       <button

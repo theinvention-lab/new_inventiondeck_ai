@@ -282,7 +282,7 @@ export function BuilderPage() {
         </div>
 
         {builder.autosaveStatus === 'error' && (
-          <div className="mb-5 flex shrink-0 items-center gap-2 rounded-xl border border-danger/40 bg-danger-soft px-4 py-3 text-[13px] text-danger">
+          <div className="mb-5 flex shrink-0 items-center gap-2 rounded-none border border-danger/40 bg-danger-soft px-4 py-3 text-[13px] text-danger">
             <span>⚠️</span>
             <p className="flex-1">저장 중 네트워크 오류가 발생했습니다. 변경사항은 남아 있어요 — 다시 시도해주세요.</p>
             <Button size="sm" variant="danger" onClick={handleManualSave}>
@@ -306,7 +306,7 @@ export function BuilderPage() {
 
             <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto">
             {tab === 'start' && (
-              <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-white p-5">
+              <div className="flex flex-col gap-4 rounded-none border border-hairline bg-white p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-[13.5px] font-bold text-ink-strong">아이디어 시작 정보</p>
                   {project.generator.ideas.length > 0 && (
@@ -357,7 +357,7 @@ export function BuilderPage() {
 
             {tab === 'criteria' && (
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between rounded-xl border border-hairline bg-white p-4">
+                <div className="flex items-center justify-between rounded-none border border-hairline bg-white p-4">
                   <div>
                     <p className="text-[13.5px] font-bold text-ink-strong">점검 기준 충족률</p>
                     <p className="text-[12px] text-ink-muted">충족 상태는 직접 판단하여 표시해주세요.</p>
@@ -385,7 +385,7 @@ export function BuilderPage() {
                   />
                 ))}
 
-                <div className="flex items-center gap-2 rounded-xl border border-dashed border-hairline-strong bg-white p-3">
+                <div className="flex items-center gap-2 rounded-none border border-dashed border-hairline-strong bg-white p-3">
                   <input
                     value={newCriterionName}
                     onChange={(e) => setNewCriterionName(e.target.value)}
@@ -431,7 +431,7 @@ export function BuilderPage() {
             <button
               key={idea.id}
               onClick={() => importFromIdea(idea.id)}
-              className="rounded-lg border border-hairline p-3 text-left transition-colors hover:border-brand hover:bg-brand-soft/40"
+              className="rounded-none border border-hairline p-3 text-left transition-colors hover:border-brand hover:bg-brand-soft/40"
             >
               <p className="text-[13.5px] font-bold text-ink-strong">{idea.title}</p>
               <p className="mt-0.5 text-[12px] text-ink-muted line-clamp-2">{idea.oneLiner}</p>

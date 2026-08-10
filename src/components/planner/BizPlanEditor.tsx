@@ -11,7 +11,7 @@ export function BizPlanEditor({
   return (
     <div className="flex flex-col gap-3">
       {sections.map((section, idx) => (
-        <div key={section.id} className="rounded-xl border border-hairline bg-white p-4">
+        <div key={section.id} className="rounded-none border border-hairline bg-white p-4">
           <div className="mb-2 flex items-center gap-2">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-canvas-sunken text-[11px] font-bold text-ink-muted">
               {idx + 1}

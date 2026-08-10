@@ -20,7 +20,7 @@ export function RecommendedRail({
   return (
     <div className="flex max-h-[220px] flex-col gap-2 overflow-y-auto pr-1">
       {cards.map((card) => (
-        <div key={card.id} className="flex items-center gap-2.5 rounded-lg border border-hairline bg-white p-2.5">
+        <div key={card.id} className="flex items-center gap-2.5 rounded-none border border-hairline bg-white p-2.5">
           <button onClick={() => onOpenDetail(card)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
             <span className="shrink-0 rounded-full bg-canvas-sunken px-2 py-0.5 text-[10px] font-bold text-ink-muted">
               {CATEGORY_LABEL[card.category]}

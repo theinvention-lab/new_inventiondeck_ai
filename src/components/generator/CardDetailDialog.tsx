@@ -40,7 +40,7 @@ export function CardDetailDialog({
           {examples.length > 0 && (
             <div className="flex flex-col gap-1.5">
               {examples.map((example, i) => (
-                <div key={i} className="rounded-lg bg-canvas-sunken p-2.5">
+                <div key={i} className="rounded-none bg-canvas-sunken p-2.5">
                   {examples.length > 1 && (
                     <p className="mb-0.5 text-[10.5px] font-bold text-ink-faint">예시 {i + 1}</p>
                   )}

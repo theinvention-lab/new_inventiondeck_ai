@@ -35,7 +35,7 @@ export function ChatPanel({
   };
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-hairline bg-white">
+    <div className="flex h-full flex-col rounded-none border border-hairline bg-white">
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -57,7 +57,7 @@ export function ChatPanel({
                     </span>
                   )}
                   <div
-                    className={`rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
+                    className={`rounded-none px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
                       m.role === 'user' ? 'bg-brand text-white' : 'bg-canvas-sunken text-ink'
                     }`}
                   >
@@ -68,7 +68,7 @@ export function ChatPanel({
             ))}
             {thinking && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-1 rounded-2xl bg-canvas-sunken px-3.5 py-2.5">
+                <div className="flex items-center gap-1 rounded-none bg-canvas-sunken px-3.5 py-2.5">
                   <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-ink-faint" />
                   <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-ink-faint [animation-delay:0.15s]" />
                   <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-ink-faint [animation-delay:0.3s]" />

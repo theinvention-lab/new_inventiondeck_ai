@@ -180,7 +180,7 @@ export function MyPage() {
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {trashed.map((p) => (
-                  <div key={p.id} className="flex flex-col gap-2 rounded-xl border border-hairline bg-white p-4">
+                  <div key={p.id} className="flex flex-col gap-2 rounded-none border border-hairline bg-white p-4">
                     <h3 className="text-[14px] font-bold text-ink-strong line-clamp-1">{p.title}</h3>
                     <p className="text-[12px] text-ink-faint">
                       삭제일 {formatDate(p.trashedAt!)} · {relativeTime(p.trashedAt!)}

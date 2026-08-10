@@ -11,7 +11,7 @@ export function TemplateFieldsForm({
   onChange: (fieldId: string, value: string) => void;
 }) {
   return (
-    <div className="rounded-xl border border-hairline bg-white p-5">
+    <div className="rounded-none border border-hairline bg-white p-5">
       <div className="mb-4 flex items-center gap-2">
         <span className="text-[20px]">{template.icon}</span>
         <div>
