@@ -98,7 +98,13 @@ export interface BuilderVersion {
   savedBy: string;
 }
 
-export type BuilderTemplateId = 'lean-canvas' | 'bmc' | 'value-prop' | 'swot' | '3c' | 'stp';
+export type BuilderTemplateId =
+  | 'idea-definition'
+  | 'idea-canvas'
+  | 'solution-outline'
+  | 'value-prop'
+  | 'bmc'
+  | 'bm-narratives';
 
 export interface BuilderState {
   summary: string;

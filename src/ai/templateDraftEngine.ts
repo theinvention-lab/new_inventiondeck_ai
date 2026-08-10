@@ -37,17 +37,41 @@ export function generateTemplateDraft(templateId: BuilderTemplateId, start: Buil
   const concerns = v(start.currentConcerns, FALLBACK.currentConcerns);
 
   switch (templateId) {
-    case 'lean-canvas':
+    case 'idea-definition':
       return {
+        ideaName: `${customer} × ${problem}`,
+        oneLiner: summary,
+        targetCustomer: customer,
         problem,
         solution,
-        uniqueValueProp: `${summary} — 기존 대안과 달리 ${customer}의 핵심 문제를 직접 겨냥합니다.`,
-        unfairAdvantage: `${evidence}에 기반한 초기 데이터와 도메인 이해`,
-        customerSegments: customer,
-        keyMetrics: `${customer}의 재방문율과 문제 해결 완료율`,
-        channels: `${customer}이(가) 주로 머무는 채널을 통한 직접 유입`,
-        costStructure: '초기 개발/운영 인건비와 채널 획득 비용',
-        revenueStreams: `${solution} 이용에 대한 과금`,
+        whyNow: `${evidence}에서 확인된 변화가 지금이 적기임을 보여줍니다.`,
+      };
+    case 'idea-canvas':
+      return {
+        insight: evidence,
+        targetCustomer: customer,
+        problem,
+        existingAlternatives: `${customer}이(가) 현재 대신 사용하는 방법들`,
+        solutionSketch: solution,
+        differentiation: `${solution}이(가) 기존 대안과 다른 점`,
+      };
+    case 'solution-outline':
+      return {
+        problemRecap: problem,
+        solutionOverview: solution,
+        keyFeatures: `${solution}을(를) 구성하는 핵심 기능`,
+        howItWorks: `${customer}이(가) ${solution}을(를) 사용하는 흐름`,
+        feasibility: concerns,
+        differentiation: `${solution}이(가) 기존 대안과 다른 점`,
+      };
+    case 'bm-narratives':
+      return {
+        customerNarrative: `${customer} — ${problem}`,
+        problemNarrative: problem,
+        solutionNarrative: solution,
+        revenueNarrative: `${solution} 이용에 대한 과금`,
+        growthNarrative: `${customer}에서 시작해 인접 세그먼트로 확장`,
+        whyUsNarrative: `${evidence}에 기반한 초기 데이터와 도메인 이해`,
       };
     case 'bmc':
       return {
@@ -69,25 +93,6 @@ export function generateTemplateDraft(templateId: BuilderTemplateId, start: Buil
         products: solution,
         painRelievers: `${solution}이(가) ${problem}을(를) 줄이는 방식`,
         gainCreators: `${solution}이(가) ${customer}에게 만들어내는 이점`,
-      };
-    case 'swot':
-      return {
-        strengths: `${evidence}에서 확인된 내부 강점`,
-        weaknesses: `${concerns}과(와) 관련해 아직 부족한 부분`,
-        opportunities: `${customer} 시장의 성장 가능성`,
-        threats: '유사한 문제를 다루는 기존 대안들의 빠른 추격',
-      };
-    case '3c':
-      return {
-        company: `${evidence}를 바탕으로 한 현재 역량과 자원`,
-        customer: `${customer} — ${problem}`,
-        competitor: '유사한 문제를 다루는 기존 대안들',
-      };
-    case 'stp':
-      return {
-        segmentation: `${customer}을(를) 중심으로 한 시장 세분화`,
-        targeting: `${problem}을(를) 가장 크게 느끼는 세그먼트 우선 공략`,
-        positioning: `${solution}을(를) 통해 ${customer}에게 다르게 인식되기`,
       };
     default:
       return {};

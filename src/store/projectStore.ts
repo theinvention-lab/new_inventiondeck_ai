@@ -40,7 +40,7 @@ function defaultBuilder(): BuilderState {
     autosaveStatus: 'idle',
     lastSavedAt: null,
     versions: [],
-    activeTemplateId: 'lean-canvas',
+    activeTemplateId: 'idea-definition',
     templateValues: {},
   };
 }
@@ -255,7 +255,7 @@ export const useProjectStore = create<ProjectStoreState>()(
                 builder: {
                   ...builder,
                   criteria,
-                  activeTemplateId: builder.activeTemplateId ?? 'lean-canvas',
+                  activeTemplateId: builder.activeTemplateId ?? 'idea-definition',
                   templateValues: builder.templateValues ?? {},
                 },
               };
