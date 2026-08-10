@@ -50,10 +50,8 @@ export function generateTemplateDraft(templateId: BuilderTemplateId, start: Buil
         coreValue,
         competitorProduct,
         keyBenefit,
-        zenStatement: `${customer}을(를) 위한 ${productDescription}으로, ${coreValue}하며, ${competitorProduct}과는 다른 ${keyBenefit}을 제공합니다.`,
         analogousProduct,
         newContext: customer,
-        weAreXForY: `우리는 ${analogousProduct}의 ${customer} 버전입니다.`,
       };
     }
     case 'idea-canvas':

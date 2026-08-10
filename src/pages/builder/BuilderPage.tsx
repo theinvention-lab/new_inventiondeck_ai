@@ -232,7 +232,8 @@ export function BuilderPage() {
 
   const draftSection = (section: TemplateSectionDef) => {
     const blankIds = (section.formula ?? []).filter((p) => p.type === 'blank').map((p) => p.id);
-    applyTemplateDraft([section.textFieldId, ...blankIds]);
+    const fieldIds = section.textFieldId ? [section.textFieldId, ...blankIds] : blankIds;
+    applyTemplateDraft(fieldIds);
   };
 
   const importFromIdea = (ideaId: string) => {

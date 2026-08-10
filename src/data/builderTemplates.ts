@@ -8,17 +8,20 @@ export interface TemplateFieldDef {
 }
 
 // A formula section renders a mad-libs style sentence: static connector text
-// interleaved with small named "blank" chips, followed by a free-text field
-// where the user writes out the assembled sentence in their own words.
-export type FormulaPart = { type: 'text'; text: string } | { type: 'blank'; id: string; label: string };
+// interleaved with small named "blank" chips. A section may optionally also
+// have its own free-text field (textFieldId) for writing the assembled
+// sentence out in full — omit it when the blanks alone are enough.
+export type FormulaPart =
+  | { type: 'text'; text: string }
+  | { type: 'blank'; id: string; label: string; placeholder?: string };
 
 export interface TemplateSectionDef {
   id: string;
   title: string;
   subtitle: string;
   formula?: FormulaPart[];
-  textFieldId: string;
-  textPlaceholder: string;
+  textFieldId?: string;
+  textPlaceholder?: string;
 }
 
 export interface BuilderTemplateDef {
@@ -45,10 +48,8 @@ export const BUILDER_TEMPLATES: BuilderTemplateDef[] = [
       { id: 'coreValue', label: '핵심 가치', placeholder: '예: 농지를 다양한 관점에서 구분한 후 실시간 분석/모니터링' },
       { id: 'competitorProduct', label: '기존의 타사 제품', placeholder: '예: 기존의 스마트 파밍 솔루션들' },
       { id: 'keyBenefit', label: '주요 혜택', placeholder: '예: 높은 차원의 분석' },
-      { id: 'zenStatement', label: 'Zen Statement', placeholder: "예: 바쁜 직장인을 위한 저희의 '밀키트 정기배송 서비스'는 '균형잡힌 식단 솔루션'으로, '간편하게 건강한 집밥'을 즐길 수 있게 합니다. 기존 배달음식과는 달리, '신선한 재료와 맞춤형 레시피'를 제공합니다." },
       { id: 'analogousProduct', label: '유사한 기존 제품/서비스', placeholder: '예: 구글 어스' },
       { id: 'newContext', label: '산업/새로운 타겟 고객 등', placeholder: '예: 농장' },
-      { id: 'weAreXForY', label: 'We are X for Y', placeholder: '예: 우리는 지역 소상공인을 위한 Shopify입니다.' },
     ],
     sections: [
       {
@@ -63,20 +64,17 @@ export const BUILDER_TEMPLATES: BuilderTemplateDef[] = [
         title: 'Zen Statement',
         subtitle: '핵심을 표현하는 완전한 제품 소개문 만들기',
         formula: [
-          { type: 'blank', id: 'targetCustomer', label: '목표 고객' },
+          { type: 'blank', id: 'targetCustomer', label: '목표 고객', placeholder: '작물재배 효율을 높이고 싶은 농장관리자' },
           { type: 'text', text: '을 위한' },
-          { type: 'blank', id: 'productDescription', label: '제품/서비스 설명' },
+          { type: 'blank', id: 'productDescription', label: '제품/서비스 설명', placeholder: '작물 재배 관리 디지털 솔루션' },
           { type: 'text', text: '으로,' },
-          { type: 'blank', id: 'coreValue', label: '핵심 가치' },
+          { type: 'blank', id: 'coreValue', label: '핵심 가치', placeholder: '농지를 다양한 관점에서 구분한 후 실시간 분석/모니터링' },
           { type: 'text', text: '하며,' },
-          { type: 'blank', id: 'competitorProduct', label: '기존의 타사 제품' },
+          { type: 'blank', id: 'competitorProduct', label: '기존의 타사 제품', placeholder: '기존의 스마트 파밍 솔루션들' },
           { type: 'text', text: '과는 다른' },
-          { type: 'blank', id: 'keyBenefit', label: '주요 혜택' },
+          { type: 'blank', id: 'keyBenefit', label: '주요 혜택', placeholder: '높은 차원의 분석' },
           { type: 'text', text: '을 제공합니다.' },
         ],
-        textFieldId: 'zenStatement',
-        textPlaceholder:
-          "예: 바쁜 직장인을 위한 저희의 '밀키트 정기배송 서비스'는 '균형잡힌 식단 솔루션'으로, '간편하게 건강한 집밥'을 즐길 수 있게 합니다. 기존 배달음식과는 달리, '신선한 재료와 맞춤형 레시피'를 제공합니다.",
       },
       {
         id: 'weAreXForY',
@@ -84,13 +82,11 @@ export const BUILDER_TEMPLATES: BuilderTemplateDef[] = [
         subtitle: '기존 유명 서비스에 빗대어 만들기',
         formula: [
           { type: 'text', text: '우리는' },
-          { type: 'blank', id: 'analogousProduct', label: '유사한 매커니즘/모델의 기존 유형 제품/서비스' },
+          { type: 'blank', id: 'analogousProduct', label: '유사한 매커니즘/모델의 기존 유형 제품/서비스', placeholder: '구글 어스' },
           { type: 'text', text: '의' },
-          { type: 'blank', id: 'newContext', label: '산업/새로운 타겟 고객 등' },
+          { type: 'blank', id: 'newContext', label: '산업/새로운 타겟 고객 등', placeholder: '농장' },
           { type: 'text', text: '버전입니다.' },
         ],
-        textFieldId: 'weAreXForY',
-        textPlaceholder: '예: 우리는 지역 소상공인을 위한 Shopify입니다.',
       },
     ],
   },
