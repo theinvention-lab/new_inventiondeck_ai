@@ -19,7 +19,6 @@ import { generateTemplateDraft } from '../../ai/templateDraftEngine';
 import { makeId } from '../../lib/id';
 import { relativeTime, formatDateTime } from '../../lib/format';
 import { getBuilderTemplate } from '../../data/builderTemplates';
-import type { TemplateSectionDef } from '../../data/builderTemplates';
 import type { CriterionEntry, BuilderTemplateId } from '../../types';
 
 const AUTOSAVE_DELAY = 1000;
@@ -230,12 +229,6 @@ export function BuilderPage() {
 
   const draftTemplateFromStartInfo = () => applyTemplateDraft();
 
-  const draftSection = (section: TemplateSectionDef) => {
-    const blankIds = (section.formula ?? []).filter((p) => p.type === 'blank').map((p) => p.id);
-    const fieldIds = section.textFieldId ? [section.textFieldId, ...blankIds] : blankIds;
-    applyTemplateDraft(fieldIds);
-  };
-
   const importFromIdea = (ideaId: string) => {
     const idea = project.generator.ideas.find((i) => i.id === ideaId);
     if (!idea) return;
@@ -360,12 +353,7 @@ export function BuilderPage() {
                   </Button>
                 </div>
                 <TemplateSelector activeId={builder.activeTemplateId} onSelect={selectTemplate} filledCount={filledCount} />
-                <TemplateFieldsForm
-                  template={activeTemplate}
-                  values={activeTemplateValues}
-                  onChange={updateTemplateField}
-                  onDraftSection={draftSection}
-                />
+                <TemplateFieldsForm template={activeTemplate} values={activeTemplateValues} onChange={updateTemplateField} />
               </div>
             )}
 
