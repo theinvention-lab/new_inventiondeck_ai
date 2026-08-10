@@ -19,6 +19,7 @@ import { generateTemplateDraft } from '../../ai/templateDraftEngine';
 import { makeId } from '../../lib/id';
 import { relativeTime, formatDateTime } from '../../lib/format';
 import { getBuilderTemplate } from '../../data/builderTemplates';
+import type { TemplateSectionDef } from '../../data/builderTemplates';
 import type { CriterionEntry, BuilderTemplateId } from '../../types';
 
 const AUTOSAVE_DELAY = 1000;
@@ -194,7 +195,7 @@ export function BuilderPage() {
     return Object.values(values).filter((v) => v && v.trim().length > 0).length;
   };
 
-  const draftTemplateFromStartInfo = () => {
+  const applyTemplateDraft = (fieldIds?: string[]) => {
     const hasStartInfo = [builder.summary, builder.targetCustomer, builder.userProblem, builder.solution].some((v) => v.trim());
     if (!hasStartInfo) {
       toast.push('먼저 ① 시작 정보 탭에서 아이디어 내용을 입력해주세요.', 'error');
@@ -209,10 +210,11 @@ export function BuilderPage() {
       assumptions: builder.assumptions,
       currentConcerns: builder.currentConcerns,
     });
+    const entries = fieldIds ? fieldIds.map((id) => [id, draft[id]] as const) : Object.entries(draft);
     const merged = { ...activeTemplateValues };
     let filledAny = false;
-    for (const [fieldId, value] of Object.entries(draft)) {
-      if (!merged[fieldId] || !merged[fieldId].trim()) {
+    for (const [fieldId, value] of entries) {
+      if (value !== undefined && (!merged[fieldId] || !merged[fieldId].trim())) {
         merged[fieldId] = value;
         filledAny = true;
       }
@@ -224,6 +226,13 @@ export function BuilderPage() {
     dirtyRef.current = true;
     updateBuilder(project.id, { templateValues: { ...builder.templateValues, [builder.activeTemplateId]: merged } });
     toast.push('시작 정보를 바탕으로 초안을 작성했어요.');
+  };
+
+  const draftTemplateFromStartInfo = () => applyTemplateDraft();
+
+  const draftSection = (section: TemplateSectionDef) => {
+    const blankIds = (section.formula ?? []).filter((p) => p.type === 'blank').map((p) => p.id);
+    applyTemplateDraft([section.textFieldId, ...blankIds]);
   };
 
   const importFromIdea = (ideaId: string) => {
@@ -350,7 +359,12 @@ export function BuilderPage() {
                   </Button>
                 </div>
                 <TemplateSelector activeId={builder.activeTemplateId} onSelect={selectTemplate} filledCount={filledCount} />
-                <TemplateFieldsForm template={activeTemplate} values={activeTemplateValues} onChange={updateTemplateField} />
+                <TemplateFieldsForm
+                  template={activeTemplate}
+                  values={activeTemplateValues}
+                  onChange={updateTemplateField}
+                  onDraftSection={draftSection}
+                />
               </div>
             )}
 

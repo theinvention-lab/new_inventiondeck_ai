@@ -37,15 +37,25 @@ export function generateTemplateDraft(templateId: BuilderTemplateId, start: Buil
   const concerns = v(start.currentConcerns, FALLBACK.currentConcerns);
 
   switch (templateId) {
-    case 'idea-definition':
+    case 'idea-definition': {
+      const productDescription = solution;
+      const coreValue = `${problem}을(를) 해결`;
+      const competitorProduct = '기존의 대안들';
+      const keyBenefit = `${evidence}에 기반한 더 나은 결과`;
+      const analogousProduct = '익숙한 서비스';
       return {
-        ideaName: `${customer} × ${problem}`,
-        oneLiner: summary,
+        ycOneLiner: `우리는 ${customer}을(를) 위한 ${summary}입니다.`,
         targetCustomer: customer,
-        problem,
-        solution,
-        whyNow: `${evidence}에서 확인된 변화가 지금이 적기임을 보여줍니다.`,
+        productDescription,
+        coreValue,
+        competitorProduct,
+        keyBenefit,
+        zenStatement: `${customer}을(를) 위한 ${productDescription}으로, ${coreValue}하며, ${competitorProduct}과는 다른 ${keyBenefit}을 제공합니다.`,
+        analogousProduct,
+        newContext: customer,
+        weAreXForY: `우리는 ${analogousProduct}의 ${customer} 버전입니다.`,
       };
+    }
     case 'idea-canvas':
       return {
         insight: evidence,
