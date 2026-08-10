@@ -182,7 +182,7 @@ export function GeneratorPage() {
 
         <Tabs
           items={[
-            { id: 'select', label: '① 카드 선택 & 조건 입력' },
+            { id: 'select', label: '① 카드 선택' },
             { id: 'results', label: '② 아이디어 결과', badge: gen.ideas.length },
           ]}
           activeId={step}
