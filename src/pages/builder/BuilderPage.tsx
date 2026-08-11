@@ -37,6 +37,7 @@ export function BuilderPage() {
 
   const [tab, setTab] = useState<'start' | 'template' | 'criteria'>('start');
   const [thinking, setThinking] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [newCriterionName, setNewCriterionName] = useState('');
   const [draggedCriterionId, setDraggedCriterionId] = useState<string | null>(null);
@@ -294,8 +295,7 @@ export function BuilderPage() {
           </div>
         )}
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="min-w-0">
+        <div className="min-w-0">
             <Tabs
               items={[
                 { id: 'start', label: '① 시작 정보' },
@@ -400,11 +400,6 @@ export function BuilderPage() {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="flex flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-140px)]">
-            <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
-          </div>
         </div>
       </div>
 
@@ -416,6 +411,31 @@ export function BuilderPage() {
           </Button>
         </div>
       </div>
+
+      {chatOpen && (
+        <div
+          className="fixed bottom-44 right-20 z-40 flex w-[380px] max-w-[calc(100vw-40px)] flex-col shadow-xl"
+          style={{ height: 'min(600px, calc(100vh - 160px))' }}
+        >
+          <div className="flex items-center justify-between border border-b-0 border-hairline bg-white px-4 py-3">
+            <p className="text-[13.5px] font-bold text-ink-strong">AI와 아이디어 점검</p>
+            <button onClick={() => setChatOpen(false)} aria-label="닫기" className="text-ink-faint hover:text-ink-strong">
+              ✕
+            </button>
+          </div>
+          <div className="min-h-0 flex-1">
+            <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => setChatOpen((v) => !v)}
+        aria-label={chatOpen ? 'AI 채팅 닫기' : 'AI 채팅 열기'}
+        className="fixed bottom-24 right-20 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg transition-transform hover:scale-105"
+      >
+        <span className="text-2xl">{chatOpen ? '✕' : '💬'}</span>
+      </button>
 
       <Dialog open={showImportDialog} onClose={() => setShowImportDialog(false)} title="프로젝트 불러오기" size="md">
         <div className="flex flex-col gap-2">
