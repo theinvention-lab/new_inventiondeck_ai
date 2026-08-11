@@ -29,14 +29,14 @@ export function TemplateFieldsForm({
                         {part.text}
                       </span>
                     ) : (
-                      <div key={i} className="flex w-56 max-w-full flex-col gap-0.5 rounded-none bg-canvas-sunken px-2 py-1.5">
-                        <span className="text-[9.5px] font-semibold text-ink-faint">{part.label}</span>
+                      <div key={i} className="flex w-72 max-w-full flex-col gap-0.5 rounded-none bg-canvas-sunken px-2.5 py-2">
+                        <span className="text-center text-[9.5px] font-semibold text-ink-faint">{part.label}</span>
                         <textarea
-                          rows={2}
+                          rows={3}
                           placeholder={part.placeholder}
                           value={values[part.id] ?? ''}
                           onChange={(e) => onChange(part.id, e.target.value)}
-                          className="w-full resize-none bg-transparent text-[12.5px] font-semibold leading-snug text-ink-strong outline-none placeholder:font-normal placeholder:text-ink-faint"
+                          className="w-full resize-none bg-transparent text-center text-[12.5px] font-semibold leading-snug text-ink-strong outline-none placeholder:font-normal placeholder:text-ink-faint"
                         />
                       </div>
                     ),
