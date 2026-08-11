@@ -56,12 +56,13 @@ export function generateTemplateDraft(templateId: BuilderTemplateId, start: Buil
     }
     case 'idea-canvas':
       return {
-        insight: evidence,
+        oneLineDefinition: summary,
         targetCustomer: customer,
-        problem,
-        existingAlternatives: `${customer}이(가) 현재 대신 사용하는 방법들`,
-        solutionSketch: solution,
-        differentiation: `${solution}이(가) 기존 대안과 다른 점`,
+        problemOpportunity: problem,
+        solutionMechanism: solution,
+        customerValue: `${problem}이(가) 줄어들어 ${customer}이(가) 본래 하려던 일에 집중할 수 있습니다.`,
+        requiredResources: '초기 개발/운영 인력과 채널 확보 비용',
+        revenueModel: `${solution} 이용에 대한 과금`,
       };
     case 'solution-outline':
       return {
