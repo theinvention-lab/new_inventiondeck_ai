@@ -7,14 +7,12 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Dialog } from '../../components/ui/Dialog';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { ChatPanel } from '../../components/builder/ChatPanel';
 import { CriterionCard } from '../../components/builder/CriterionCard';
 import { TemplateSelector } from '../../components/builder/TemplateSelector';
 import { TemplateFieldsForm } from '../../components/builder/TemplateFieldsForm';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useToast } from '../../components/ui/Toast';
-import { openingMessage, generateAiReply } from '../../ai/chatEngine';
 import { generateTemplateDraft } from '../../ai/templateDraftEngine';
 import { makeId } from '../../lib/id';
 import { relativeTime, formatDateTime } from '../../lib/format';
@@ -36,8 +34,6 @@ export function BuilderPage() {
   const updateProject = useProjectStore((s) => s.updateProject);
 
   const [tab, setTab] = useState<'start' | 'template' | 'criteria'>('start');
-  const [thinking, setThinking] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [newCriterionName, setNewCriterionName] = useState('');
   const [draggedCriterionId, setDraggedCriterionId] = useState<string | null>(null);
@@ -116,23 +112,6 @@ export function BuilderPage() {
       dirtyRef.current = false;
       toast.push('저장되었습니다.');
     }, 500);
-  };
-
-  const startChat = () => {
-    const msg = openingMessage(builder);
-    updateBuilder(project.id, { chatMessages: [msg] });
-  };
-
-  const sendChat = (text: string) => {
-    const userMsg = { id: makeId('msg'), role: 'user' as const, content: text, createdAt: new Date().toISOString() };
-    const nextMessages = [...builder.chatMessages, userMsg];
-    updateBuilder(project.id, { chatMessages: nextMessages });
-    setThinking(true);
-    window.setTimeout(() => {
-      const reply = generateAiReply(builder, text);
-      updateBuilder(project.id, { chatMessages: [...nextMessages, reply] });
-      setThinking(false);
-    }, 800 + Math.random() * 500);
   };
 
   const patchCriterion = (id: string, patch: Partial<CriterionEntry>) => {
@@ -411,31 +390,6 @@ export function BuilderPage() {
           </Button>
         </div>
       </div>
-
-      {chatOpen && (
-        <div
-          className="fixed bottom-44 right-20 z-40 flex w-[380px] max-w-[calc(100vw-40px)] flex-col shadow-xl"
-          style={{ height: 'min(600px, calc(100vh - 160px))' }}
-        >
-          <div className="flex items-center justify-between border border-b-0 border-hairline bg-white px-4 py-3">
-            <p className="text-[13.5px] font-bold text-ink-strong">AI와 아이디어 점검</p>
-            <button onClick={() => setChatOpen(false)} aria-label="닫기" className="text-ink-faint hover:text-ink-strong">
-              ✕
-            </button>
-          </div>
-          <div className="min-h-0 flex-1">
-            <ChatPanel messages={builder.chatMessages} onSend={sendChat} onStart={startChat} thinking={thinking} />
-          </div>
-        </div>
-      )}
-
-      <button
-        onClick={() => setChatOpen((v) => !v)}
-        aria-label={chatOpen ? 'AI 채팅 닫기' : 'AI 채팅 열기'}
-        className="fixed bottom-24 right-20 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg transition-transform hover:scale-105"
-      >
-        <span className="text-2xl">{chatOpen ? '✕' : '💬'}</span>
-      </button>
 
       <Dialog open={showImportDialog} onClose={() => setShowImportDialog(false)} title="프로젝트 불러오기" size="md">
         <div className="flex flex-col gap-2">

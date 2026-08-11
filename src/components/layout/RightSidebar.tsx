@@ -1,19 +1,40 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Dialog } from '../ui/Dialog';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
+import { ChatPanel } from '../builder/ChatPanel';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore, TRASH_RETENTION_DAYS } from '../../store/projectStore';
 import { useNoteStore } from '../../store/noteStore';
 import { useToast } from '../ui/Toast';
+import { useBuilderChat } from '../../hooks/useBuilderChat';
+import type { BuilderState } from '../../types';
 
-const PANEL_TOP: Record<'projects' | 'notes', number> = {
+const PANEL_TOP: Record<'projects' | 'notes' | 'chat', number> = {
   projects: 24,
   notes: 92,
+  chat: 160,
+};
+
+const EMPTY_BUILDER: BuilderState = {
+  summary: '',
+  targetCustomer: '',
+  userProblem: '',
+  solution: '',
+  evidence: '',
+  assumptions: '',
+  currentConcerns: '',
+  chatMessages: [],
+  criteria: [],
+  autosaveStatus: 'idle',
+  lastSavedAt: null,
+  versions: [],
+  activeTemplateId: 'idea-definition',
+  templateValues: {},
 };
 
 function SlidePanel({
@@ -22,6 +43,8 @@ function SlidePanel({
   title,
   topOffset,
   headerAction,
+  bodyClassName = 'flex-1 overflow-y-auto p-4',
+  heightPx,
   children,
 }: {
   open: boolean;
@@ -29,6 +52,8 @@ function SlidePanel({
   title: string;
   topOffset: number;
   headerAction?: ReactNode;
+  bodyClassName?: string;
+  heightPx?: number;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -49,7 +74,12 @@ function SlidePanel({
         role="dialog"
         aria-modal="true"
         className="animate-slide-in-right fixed z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col rounded-none border border-hairline bg-white shadow-lg"
-        style={{ top: topOffset, right: 80, maxHeight: 'calc(100vh - 40px)' }}
+        style={{
+          top: topOffset,
+          right: 80,
+          height: heightPx,
+          maxHeight: heightPx ? undefined : 'calc(100vh - 40px)',
+        }}
       >
         <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
           <div className="flex items-center gap-3">
@@ -60,7 +90,7 @@ function SlidePanel({
             ✕
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">{children}</div>
+        <div className={bodyClassName}>{children}</div>
       </div>
     </>,
     document.body,
@@ -69,6 +99,8 @@ function SlidePanel({
 
 export function RightSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { projectId } = useParams<{ projectId: string }>();
   const toast = useToast();
   const currentUser = useAuthStore((s) => s.currentUser());
   const email = currentUser?.email ?? '';
@@ -76,12 +108,17 @@ export function RightSidebar() {
   const projects = useProjectStore((s) => s.projects);
   const createProject = useProjectStore((s) => s.createProject);
   const softDeleteProject = useProjectStore((s) => s.softDeleteProject);
+  const updateBuilder = useProjectStore((s) => s.updateBuilder);
 
   const notes = useNoteStore((s) => s.notes);
   const createNote = useNoteStore((s) => s.createNote);
   const deleteNote = useNoteStore((s) => s.deleteNote);
 
-  const [openPanel, setOpenPanel] = useState<'projects' | 'notes' | null>(null);
+  const isBuilderPage = !!projectId && location.pathname.endsWith('/builder');
+  const builderProject = projects.find((p) => p.id === projectId);
+  const chat = useBuilderChat(projectId ?? '', builderProject?.builder ?? EMPTY_BUILDER, updateBuilder);
+
+  const [openPanel, setOpenPanel] = useState<'projects' | 'notes' | 'chat' | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [creatingNote, setCreatingNote] = useState(false);
   const [title, setTitle] = useState('');
@@ -163,6 +200,18 @@ export function RightSidebar() {
           <i className="fi fi-rr-paper-plane text-[17px]" />
           <span className="text-[10px] font-semibold leading-none whitespace-nowrap">메모</span>
         </button>
+        {isBuilderPage && (
+          <button
+            onClick={() => setOpenPanel((p) => (p === 'chat' ? null : 'chat'))}
+            aria-label="AI 채팅"
+            className={`flex h-14 w-14 flex-col items-center justify-center gap-1 rounded-xl transition-colors ${
+              openPanel === 'chat' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
+            }`}
+          >
+            <i className="fi fi-rr-comment text-[17px]" />
+            <span className="text-[10px] font-semibold leading-none whitespace-nowrap">채팅</span>
+          </button>
+        )}
       </aside>
 
       <SlidePanel open={openPanel === 'projects'} onClose={() => setOpenPanel(null)} title="내 프로젝트" topOffset={PANEL_TOP.projects}>
@@ -278,6 +327,24 @@ export function RightSidebar() {
           </>
         )}
       </SlidePanel>
+
+      {isBuilderPage && (
+        <SlidePanel
+          open={openPanel === 'chat'}
+          onClose={() => setOpenPanel(null)}
+          title="AI와 아이디어 점검"
+          topOffset={PANEL_TOP.chat}
+          bodyClassName="flex-1 min-h-0"
+          heightPx={520}
+        >
+          <ChatPanel
+            messages={builderProject?.builder.chatMessages ?? []}
+            onSend={chat.sendChat}
+            onStart={chat.startChat}
+            thinking={chat.thinking}
+          />
+        </SlidePanel>
+      )}
 
       <Dialog
         open={!!confirmDeleteId}
