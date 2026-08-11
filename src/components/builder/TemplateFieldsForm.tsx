@@ -96,6 +96,57 @@ function FormulaSection({
   );
 }
 
+// Maps each BMC field id to its area name in the classic Osterwalder canvas
+// grid: Key Partners | Key Activities / Key Resources | Value Propositions |
+// Customer Relationships / Channels | Customer Segments, with Cost Structure
+// and Revenue Streams spanning the bottom row.
+const BMC_AREAS: Record<string, string> = {
+  keyPartners: 'partners',
+  keyActivities: 'activities',
+  keyResources: 'resources',
+  valuePropositions: 'value',
+  customerRelationships: 'relationships',
+  channels: 'channels',
+  customerSegments: 'segments',
+  costStructure: 'cost',
+  revenueStreams: 'revenue',
+};
+
+function BMCGrid({
+  template,
+  values,
+  onChange,
+}: {
+  template: BuilderTemplateDef;
+  values: Record<string, string>;
+  onChange: (fieldId: string, value: string) => void;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-none border border-hairline bg-hairline">
+      <div
+        className="grid min-w-[920px] gap-px"
+        style={{
+          gridTemplateColumns: 'repeat(5, minmax(160px, 1fr))',
+          gridTemplateRows: 'minmax(170px, auto) minmax(170px, auto) minmax(130px, auto)',
+          gridTemplateAreas: `"partners activities value relationships segments" "partners resources value channels segments" "cost cost revenue revenue revenue"`,
+        }}
+      >
+        {template.fields.map((f) => (
+          <div key={f.id} style={{ gridArea: BMC_AREAS[f.id] }} className="flex flex-col gap-1.5 bg-white p-3">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-strong">{f.label}</p>
+            <textarea
+              className="w-full flex-1 resize-none border-0 bg-transparent p-0 text-[12px] leading-relaxed text-ink outline-none placeholder:text-ink-faint"
+              placeholder={f.placeholder}
+              value={values[f.id] ?? ''}
+              onChange={(e) => onChange(f.id, e.target.value)}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function TemplateFieldsForm({
   template,
   values,
@@ -105,6 +156,10 @@ export function TemplateFieldsForm({
   values: Record<string, string>;
   onChange: (fieldId: string, value: string) => void;
 }) {
+  if (template.layout === 'grid-bmc') {
+    return <BMCGrid template={template} values={values} onChange={onChange} />;
+  }
+
   if (template.sections) {
     return (
       <div className="flex flex-col divide-y divide-hairline rounded-none border border-hairline bg-white px-7">

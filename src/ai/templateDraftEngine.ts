@@ -95,12 +95,11 @@ export function generateTemplateDraft(templateId: BuilderTemplateId, start: Buil
       };
     case 'value-prop':
       return {
-        customerJobs: `${customer}이(가) 완수하려는 일: ${problem}`,
-        customerPains: `${problem} 과정에서 겪는 불편`,
-        customerGains: `${solution}을(를) 통해 얻고 싶어하는 결과`,
-        products: solution,
-        painRelievers: `${solution}이(가) ${problem}을(를) 줄이는 방식`,
-        gainCreators: `${solution}이(가) ${customer}에게 만들어내는 이점`,
+        targetCustomer: customer,
+        customerNeedsAlternatives: `${problem} 상황에서 ${customer}이(가) 현재 쓰고 있는 대안`,
+        reason: `기존 대안으로는 ${problem}이(가) 충분히 해결되지 않는 이유`,
+        solution,
+        valueProposition: `${solution}이(가) ${customer}에게 만들어내는 핵심 가치`,
       };
     default:
       return {};

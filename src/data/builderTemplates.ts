@@ -32,6 +32,7 @@ export interface BuilderTemplateDef {
   icon: string;
   fields: TemplateFieldDef[];
   sections?: TemplateSectionDef[];
+  layout?: 'grid-bmc';
 }
 
 export const BUILDER_TEMPLATES: BuilderTemplateDef[] = [
@@ -215,12 +216,48 @@ export const BUILDER_TEMPLATES: BuilderTemplateDef[] = [
     description: '고객이 실제로 원하는 가치와 제품이 맞아떨어지는지 검증할 때 적합합니다.',
     icon: '💎',
     fields: [
-      { id: 'customerJobs', label: '고객이 해결하려는 일', placeholder: '고객이 완수하려는 기능적/감정적 과업', span: 1 },
-      { id: 'customerPains', label: '고객의 불편', placeholder: '과업 수행 중 겪는 어려움과 리스크', span: 1 },
-      { id: 'customerGains', label: '고객이 원하는 효과', placeholder: '고객이 얻고 싶어하는 이점', span: 1 },
-      { id: 'products', label: '제품/서비스', placeholder: '제공하는 제품과 서비스 목록', span: 1 },
-      { id: 'painRelievers', label: '불편 해소 방안', placeholder: '제품이 고객의 불편을 어떻게 줄이는지', span: 1 },
-      { id: 'gainCreators', label: '효과 창출 방안', placeholder: '제품이 고객에게 어떤 이점을 만들어내는지', span: 1 },
+      { id: 'targetCustomer', label: '타겟 고객', placeholder: '예: 주 5일 이상 야근하는 20~30대 1인 가구 반려견 양육자' },
+      { id: 'customerNeedsAlternatives', label: '고객의 니즈 및 대안', placeholder: '예: 매일 산책을 챙기고 싶지만 시간이 없어 펫시터 앱이나 가족에게 부탁하는 방식으로 대신하고 있다' },
+      { id: 'reason', label: '이유', placeholder: '예: 기존 펫시터는 비용이 높고 매칭까지 시간이 걸려 급하게 필요한 날 대응이 어렵다' },
+      { id: 'solution', label: '솔루션', placeholder: '예: 같은 동네 반려인끼리 산책 시간대를 실시간으로 매칭해주는 서비스' },
+      { id: 'valueProposition', label: '고객가치 제안', placeholder: '예: 몇 분 만에 신뢰할 수 있는 이웃과 매칭되어, 비용 부담 없이 반려견의 산책 공백을 없앤다' },
+    ],
+    sections: [
+      {
+        id: 'targetCustomer',
+        title: '타겟 고객',
+        subtitle: '가치 제안을 검증할 구체적인 고객',
+        textFieldId: 'targetCustomer',
+        textPlaceholder: '예: 주 5일 이상 야근하는 20~30대 1인 가구 반려견 양육자',
+      },
+      {
+        id: 'customerNeedsAlternatives',
+        title: '고객의 니즈 및 대안',
+        subtitle: '고객이 해결하려는 니즈와 지금 쓰고 있는 대안',
+        textFieldId: 'customerNeedsAlternatives',
+        textPlaceholder: '예: 매일 산책을 챙기고 싶지만 시간이 없어 펫시터 앱이나 가족에게 부탁하는 방식으로 대신하고 있다',
+      },
+      {
+        id: 'reason',
+        title: '이유',
+        subtitle: '기존 대안으로는 충분하지 않은 이유',
+        textFieldId: 'reason',
+        textPlaceholder: '예: 기존 펫시터는 비용이 높고 매칭까지 시간이 걸려 급하게 필요한 날 대응이 어렵다',
+      },
+      {
+        id: 'solution',
+        title: '솔루션',
+        subtitle: '이 니즈를 해결하는 우리의 솔루션',
+        textFieldId: 'solution',
+        textPlaceholder: '예: 같은 동네 반려인끼리 산책 시간대를 실시간으로 매칭해주는 서비스',
+      },
+      {
+        id: 'valueProposition',
+        title: '고객가치 제안',
+        subtitle: '솔루션이 고객에게 제공하는 핵심 가치, 왜 우리를 선택해야 하는가',
+        textFieldId: 'valueProposition',
+        textPlaceholder: '예: 몇 분 만에 신뢰할 수 있는 이웃과 매칭되어, 비용 부담 없이 반려견의 산책 공백을 없앤다',
+      },
     ],
   },
   {
@@ -229,6 +266,7 @@ export const BUILDER_TEMPLATES: BuilderTemplateDef[] = [
     shortName: 'Business Model Canvas',
     description: '사업 전체 구조를 9개 블록으로 균형 있게 설계할 때 적합합니다.',
     icon: '🧱',
+    layout: 'grid-bmc',
     fields: [
       { id: 'keyPartners', label: '핵심 파트너', placeholder: '협력이 필요한 외부 주체', span: 1 },
       { id: 'keyActivities', label: '핵심 활동', placeholder: '가치를 만들기 위해 반드시 해야 하는 활동', span: 1 },
