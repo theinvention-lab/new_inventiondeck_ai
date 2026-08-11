@@ -66,12 +66,11 @@ export function generateTemplateDraft(templateId: BuilderTemplateId, start: Buil
       };
     case 'solution-outline':
       return {
-        problemRecap: problem,
-        solutionOverview: solution,
+        solutionTagline: summary,
         keyFeatures: `${solution}을(를) 구성하는 핵심 기능`,
-        howItWorks: `${customer}이(가) ${solution}을(를) 사용하는 흐름`,
-        feasibility: concerns,
-        differentiation: `${solution}이(가) 기존 대안과 다른 점`,
+        customerValues: `${problem}이(가) 줄어들어 ${customer}이(가) 얻는 결과`,
+        keyRequirements: `${solution} 실행에 필요한 기술·자원과 초기 사용자 확보`,
+        hurdles: concerns,
       };
     case 'bm-narratives':
       return {
