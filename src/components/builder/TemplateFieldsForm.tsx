@@ -1,5 +1,100 @@
-import type { BuilderTemplateDef } from '../../data/builderTemplates';
+import type { BuilderTemplateDef, FormulaPart, TemplateSectionDef } from '../../data/builderTemplates';
 import { Textarea } from '../ui/Textarea';
+
+interface FormulaRow {
+  lead?: string;
+  blank: Extract<FormulaPart, { type: 'blank' }>;
+  trail?: string;
+}
+
+// Splits a mad-libs formula into one row per blank, attaching the connector
+// text that surrounds it. Text before the first blank becomes that row's lead;
+// any other text trails the blank it follows.
+function toRows(formula: FormulaPart[]): FormulaRow[] {
+  const rows: FormulaRow[] = [];
+  let pendingLead: string | undefined;
+
+  for (const part of formula) {
+    if (part.type === 'blank') {
+      rows.push({ lead: pendingLead, blank: part });
+      pendingLead = undefined;
+    } else if (rows.length === 0) {
+      pendingLead = (pendingLead ?? '') + part.text;
+    } else {
+      const last = rows[rows.length - 1];
+      last.trail = (last.trail ?? '') + part.text;
+    }
+  }
+  return rows;
+}
+
+function FormulaSection({
+  section,
+  values,
+  onChange,
+}: {
+  section: TemplateSectionDef;
+  values: Record<string, string>;
+  onChange: (fieldId: string, value: string) => void;
+}) {
+  const formula = section.formula!;
+  const rows = toRows(formula);
+  const filled = rows.filter((r) => values[r.blank.id]?.trim()).length;
+
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        {rows.map((row, idx) => (
+          <div key={row.blank.id} className="grid gap-1.5 sm:grid-cols-[168px_minmax(0,1fr)] sm:items-start sm:gap-4">
+            <div className="flex items-baseline gap-2 sm:pt-2.5">
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center bg-canvas-sunken text-[10px] font-bold text-ink-faint">
+                {idx + 1}
+              </span>
+              <span className="text-[12px] font-semibold leading-snug text-ink-strong">{row.blank.label}</span>
+            </div>
+            <div className="min-w-0">
+              <Textarea
+                rows={2}
+                placeholder={row.blank.placeholder}
+                value={values[row.blank.id] ?? ''}
+                onChange={(e) => onChange(row.blank.id, e.target.value)}
+                style={{ borderRadius: 0 }}
+              />
+              <p className="mt-1 text-[11px] text-ink-faint">
+                {row.lead?.trim() && <span>{row.lead.trim()} </span>}
+                <span className="text-ink-muted">___</span>
+                {row.trail?.trim() && <span> {row.trail.trim()}</span>}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 border-l-2 border-brand bg-canvas-sunken/60 px-4 py-3">
+        <p className="mb-1 text-[10.5px] font-bold uppercase tracking-wide text-ink-faint">
+          완성된 문장 · {filled}/{rows.length}
+        </p>
+        <p className="text-[13.5px] leading-relaxed text-ink-strong">
+          {formula.map((part, i) =>
+            part.type === 'text' ? (
+              <span key={i} className="text-ink-muted">
+                {part.text}
+              </span>
+            ) : values[part.id]?.trim() ? (
+              <span key={i} className="font-bold">
+                {values[part.id].trim()}
+              </span>
+            ) : (
+              <span key={i} className="text-ink-faint">
+                ______
+              </span>
+            ),
+          )}
+        </p>
+      </div>
+    </>
+  );
+}
 
 export function TemplateFieldsForm({
   template,
@@ -12,50 +107,29 @@ export function TemplateFieldsForm({
 }) {
   if (template.sections) {
     return (
-      <div className="flex flex-col gap-4 rounded-none border border-hairline bg-white px-8 py-5">
-        <div className="flex flex-col divide-y divide-hairline">
-          {template.sections.map((section) => (
-            <div key={section.id} className="py-4 first:pt-0 last:pb-0">
-              <div className="mb-3">
-                <p className="text-[13.5px] font-bold text-brand-strong">{section.title}</p>
-                <p className="text-[11.5px] text-ink-muted">{section.subtitle}</p>
-              </div>
+      <div className="flex flex-col divide-y divide-hairline rounded-none border border-hairline bg-white px-7">
+        {template.sections.map((section) => (
+          <section key={section.id} className="py-6">
+            <div className="mb-3.5">
+              <h3 className="text-[14px] font-bold text-ink-strong">{section.title}</h3>
+              <p className="mt-0.5 text-[11.5px] text-ink-muted">{section.subtitle}</p>
+            </div>
 
-              {section.formula && (
-                <div className="flex flex-wrap items-end gap-x-2 gap-y-2 text-[12.5px] leading-relaxed">
-                  {section.formula.map((part, i) =>
-                    part.type === 'text' ? (
-                      <span key={i} className="pb-1.5 text-ink-muted">
-                        {part.text}
-                      </span>
-                    ) : (
-                      <div key={i} className="flex w-72 max-w-full flex-col gap-0.5 rounded-none bg-canvas-sunken px-2.5 py-2">
-                        <span className="text-center text-[9.5px] font-semibold text-ink-faint">{part.label}</span>
-                        <textarea
-                          rows={3}
-                          placeholder={part.placeholder}
-                          value={values[part.id] ?? ''}
-                          onChange={(e) => onChange(part.id, e.target.value)}
-                          className="w-full resize-none bg-transparent text-center text-[12.5px] font-semibold leading-snug text-ink-strong outline-none placeholder:font-normal placeholder:text-ink-faint"
-                        />
-                      </div>
-                    ),
-                  )}
-                </div>
-              )}
-
-              {section.textFieldId && (
+            {section.formula ? (
+              <FormulaSection section={section} values={values} onChange={onChange} />
+            ) : (
+              section.textFieldId && (
                 <Textarea
                   rows={3}
                   placeholder={section.textPlaceholder}
                   value={values[section.textFieldId] ?? ''}
                   onChange={(e) => onChange(section.textFieldId!, e.target.value)}
-                  className="mt-3"
+                  style={{ borderRadius: 0 }}
                 />
-              )}
-            </div>
-          ))}
-        </div>
+              )
+            )}
+          </section>
+        ))}
       </div>
     );
   }
