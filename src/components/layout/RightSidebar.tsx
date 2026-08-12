@@ -1,40 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Dialog } from '../ui/Dialog';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Button } from '../ui/Button';
-import { ChatPanel } from '../builder/ChatPanel';
+import { AgentPanel } from '../agent/AgentPanel';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore, TRASH_RETENTION_DAYS } from '../../store/projectStore';
 import { useNoteStore } from '../../store/noteStore';
 import { useToast } from '../ui/Toast';
-import { useBuilderChat } from '../../hooks/useBuilderChat';
-import type { BuilderState } from '../../types';
+import { useAgentChat } from '../../hooks/useAgentChat';
+import { GENERAL_AGENT_SCOPE } from '../../store/agentStore';
 
-const PANEL_TOP: Record<'projects' | 'notes' | 'chat', number> = {
+const PANEL_TOP: Record<'projects' | 'notes' | 'agent', number> = {
   projects: 24,
   notes: 92,
-  chat: 160,
-};
-
-const EMPTY_BUILDER: BuilderState = {
-  summary: '',
-  targetCustomer: '',
-  userProblem: '',
-  solution: '',
-  evidence: '',
-  assumptions: '',
-  currentConcerns: '',
-  chatMessages: [],
-  criteria: [],
-  autosaveStatus: 'idle',
-  lastSavedAt: null,
-  versions: [],
-  activeTemplateId: 'idea-definition',
-  templateValues: {},
+  agent: 160,
 };
 
 function SlidePanel({
@@ -45,6 +28,11 @@ function SlidePanel({
   headerAction,
   bodyClassName = 'flex-1 overflow-y-auto p-4',
   heightPx,
+  /**
+   * 기본은 바깥을 클릭하면 닫히는 모달형. 에이전트 패널처럼 열어둔 채로
+   * 뒤쪽 폼을 계속 만져야 하는(입력 칸을 끌어다 놓는) 경우에는 꺼둔다.
+   */
+  modal = true,
   children,
 }: {
   open: boolean;
@@ -54,6 +42,7 @@ function SlidePanel({
   headerAction?: ReactNode;
   bodyClassName?: string;
   heightPx?: number;
+  modal?: boolean;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -69,10 +58,10 @@ function SlidePanel({
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      {modal && <div className="fixed inset-0 z-40" onClick={onClose} />}
       <div
         role="dialog"
-        aria-modal="true"
+        aria-modal={modal}
         className="animate-slide-in-right fixed z-50 flex w-[360px] max-w-[calc(100vw-32px)] flex-col rounded-none border border-hairline bg-white shadow-lg"
         style={{
           top: topOffset,
@@ -99,7 +88,6 @@ function SlidePanel({
 
 export function RightSidebar() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { projectId } = useParams<{ projectId: string }>();
   const toast = useToast();
   const currentUser = useAuthStore((s) => s.currentUser());
@@ -108,17 +96,15 @@ export function RightSidebar() {
   const projects = useProjectStore((s) => s.projects);
   const createProject = useProjectStore((s) => s.createProject);
   const softDeleteProject = useProjectStore((s) => s.softDeleteProject);
-  const updateBuilder = useProjectStore((s) => s.updateBuilder);
 
   const notes = useNoteStore((s) => s.notes);
   const createNote = useNoteStore((s) => s.createNote);
   const deleteNote = useNoteStore((s) => s.deleteNote);
 
-  const isBuilderPage = !!projectId && location.pathname.endsWith('/builder');
-  const builderProject = projects.find((p) => p.id === projectId);
-  const chat = useBuilderChat(projectId ?? '', builderProject?.builder ?? EMPTY_BUILDER, updateBuilder);
+  // 대화는 프로젝트 단위로 나눠 보관하고, 프로젝트 밖에서는 공용 대화를 쓴다.
+  const agent = useAgentChat(projectId ?? GENERAL_AGENT_SCOPE);
 
-  const [openPanel, setOpenPanel] = useState<'projects' | 'notes' | 'chat' | null>(null);
+  const [openPanel, setOpenPanel] = useState<'projects' | 'notes' | 'agent' | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [creatingNote, setCreatingNote] = useState(false);
   const [title, setTitle] = useState('');
@@ -200,18 +186,20 @@ export function RightSidebar() {
           <i className="fi fi-rr-paper-plane text-[17px]" />
           <span className="text-[10px] font-semibold leading-none whitespace-nowrap">메모</span>
         </button>
-        {isBuilderPage && (
-          <button
-            onClick={() => setOpenPanel((p) => (p === 'chat' ? null : 'chat'))}
-            aria-label="AI 채팅"
-            className={`flex h-14 w-14 flex-col items-center justify-center gap-1 rounded-xl transition-colors ${
-              openPanel === 'chat' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
-            }`}
-          >
-            <i className="fi fi-rr-comment text-[17px]" />
-            <span className="text-[10px] font-semibold leading-none whitespace-nowrap">채팅</span>
-          </button>
-        )}
+        <button
+          onClick={() => setOpenPanel((p) => (p === 'agent' ? null : 'agent'))}
+          aria-label="비즈니스 에이전트"
+          className={`flex h-14 w-14 flex-col items-center justify-center gap-1 rounded-xl transition-colors ${
+            openPanel === 'agent' ? 'bg-brand-soft text-brand-strong' : 'text-ink-muted hover:bg-canvas-sunken hover:text-ink-strong'
+          }`}
+        >
+          <i className="fi fi-rr-comment text-[17px]" />
+          <span className="text-center text-[10px] font-semibold leading-[1.15]">
+            비즈니스
+            <br />
+            에이전트
+          </span>
+        </button>
       </aside>
 
       <SlidePanel open={openPanel === 'projects'} onClose={() => setOpenPanel(null)} title="내 프로젝트" topOffset={PANEL_TOP.projects}>
@@ -328,23 +316,24 @@ export function RightSidebar() {
         )}
       </SlidePanel>
 
-      {isBuilderPage && (
-        <SlidePanel
-          open={openPanel === 'chat'}
-          onClose={() => setOpenPanel(null)}
-          title="AI와 아이디어 점검"
-          topOffset={PANEL_TOP.chat}
-          bodyClassName="flex-1 min-h-0"
-          heightPx={520}
-        >
-          <ChatPanel
-            messages={builderProject?.builder.chatMessages ?? []}
-            onSend={chat.sendChat}
-            onStart={chat.startChat}
-            thinking={chat.thinking}
-          />
-        </SlidePanel>
-      )}
+      <SlidePanel
+        open={openPanel === 'agent'}
+        onClose={() => setOpenPanel(null)}
+        title="비즈니스 에이전트"
+        topOffset={PANEL_TOP.agent}
+        bodyClassName="flex-1 min-h-0"
+        heightPx={560}
+        modal={false}
+        headerAction={
+          agent.messages.length > 0 && (
+            <button onClick={agent.clear} className="text-[12px] font-semibold text-ink-faint hover:text-danger">
+              대화 비우기
+            </button>
+          )
+        }
+      >
+        <AgentPanel messages={agent.messages} thinking={agent.thinking} onSend={agent.send} />
+      </SlidePanel>
 
       <Dialog
         open={!!confirmDeleteId}

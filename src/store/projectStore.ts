@@ -9,7 +9,6 @@ import type {
   Project,
 } from '../types';
 import { makeId } from '../lib/id';
-import { defaultCriteria } from '../data/defaultCriteria';
 
 export const TRASH_RETENTION_DAYS = 7;
 
@@ -28,6 +27,8 @@ function defaultGenerator(): GeneratorState {
 
 function defaultBuilder(): BuilderState {
   return {
+    startInfoSource: 'manual',
+    sourceIdeaId: null,
     summary: '',
     targetCustomer: '',
     userProblem: '',
@@ -35,8 +36,10 @@ function defaultBuilder(): BuilderState {
     evidence: '',
     assumptions: '',
     currentConcerns: '',
-    chatMessages: [],
-    criteria: defaultCriteria(),
+    // 점검 기준은 처음부터 채워두지 않는다 — ①/② 탭에 쓴 내용을 바탕으로
+    // AI가 기준 모듈에서 필요한 것만 골라 담는 흐름이다.
+    criteria: [],
+    criteriaSuggestedAt: null,
     autosaveStatus: 'idle',
     lastSavedAt: null,
     versions: [],
@@ -206,7 +209,7 @@ export const useProjectStore = create<ProjectStoreState>()(
     {
       name: 'inventiondeck:projects',
       storage: createJSONStorage(() => localStorage),
-      version: 4,
+      version: 5,
       migrate: (persisted, fromVersion) => {
         const state = persisted as { projects?: Array<Record<string, unknown>> } | undefined;
         if (state?.projects) {
@@ -287,6 +290,24 @@ export const useProjectStore = create<ProjectStoreState>()(
               const rest = { ...next };
               delete rest.deck;
               next = { ...rest, planner, stage };
+            }
+
+            // v4 → v5: Builder 시작 정보가 직접 작성인지 Generator에서
+            // 가져온 것인지 구분하고, 점검 기준은 AI 추천으로 담는 방식이
+            // 되면서 추천 시각을 기록한다. 이미 쓰던 기준 목록은 그대로 둔다.
+            if (fromVersion < 5) {
+              const builder = (next.builder as Record<string, unknown>) ?? defaultBuilder();
+              next = {
+                ...next,
+                builder: {
+                  ...builder,
+                  startInfoSource: builder.startInfoSource ?? 'manual',
+                  sourceIdeaId: builder.sourceIdeaId ?? null,
+                  criteriaSuggestedAt:
+                    builder.criteriaSuggestedAt ??
+                    (((builder.criteria as CriterionEntry[]) ?? []).length > 0 ? new Date().toISOString() : null),
+                },
+              };
             }
 
             return next;

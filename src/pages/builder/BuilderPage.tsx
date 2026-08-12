@@ -5,19 +5,21 @@ import { Tabs } from '../../components/ui/Tabs';
 import { Textarea } from '../../components/ui/Textarea';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Dialog } from '../../components/ui/Dialog';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CriterionCard } from '../../components/builder/CriterionCard';
+import { CriteriaSuggestionPanel } from '../../components/builder/CriteriaSuggestionPanel';
+import { StartInfoSourcePicker } from '../../components/builder/StartInfoSourcePicker';
 import { TemplateSelector } from '../../components/builder/TemplateSelector';
 import { TemplateFieldsForm } from '../../components/builder/TemplateFieldsForm';
 import { useAuthStore } from '../../store/authStore';
 import { useProjectStore } from '../../store/projectStore';
 import { useToast } from '../../components/ui/Toast';
 import { generateTemplateDraft } from '../../ai/templateDraftEngine';
+import { suggestCriteria, criterionFromModule, type CriterionSuggestion } from '../../ai/criteriaEngine';
 import { makeId } from '../../lib/id';
 import { relativeTime, formatDateTime } from '../../lib/format';
 import { getBuilderTemplate } from '../../data/builderTemplates';
-import type { CriterionEntry, BuilderTemplateId } from '../../types';
+import type { CriterionEntry, BuilderTemplateId, StartInfoSource } from '../../types';
 
 const AUTOSAVE_DELAY = 1000;
 const SIMULATED_FAILURE_RATE = 0.12;
@@ -34,9 +36,11 @@ export function BuilderPage() {
   const updateProject = useProjectStore((s) => s.updateProject);
 
   const [tab, setTab] = useState<'start' | 'template' | 'criteria'>('start');
-  const [showImportDialog, setShowImportDialog] = useState(false);
   const [newCriterionName, setNewCriterionName] = useState('');
   const [draggedCriterionId, setDraggedCriterionId] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<CriterionSuggestion[] | null>(null);
+  const [selectedSuggestionIds, setSelectedSuggestionIds] = useState<string[]>([]);
+  const [suggesting, setSuggesting] = useState(false);
 
   const saveTimer = useRef<number | null>(null);
   const dirtyRef = useRef(false);
@@ -209,17 +213,65 @@ export function BuilderPage() {
 
   const draftTemplateFromStartInfo = () => applyTemplateDraft();
 
-  const importFromIdea = (ideaId: string) => {
+  const applyIdeaToStartInfo = (ideaId: string) => {
     const idea = project.generator.ideas.find((i) => i.id === ideaId);
     if (!idea) return;
     markDirty({
+      startInfoSource: 'generator',
+      sourceIdeaId: idea.id,
       summary: idea.oneLiner,
       targetCustomer: idea.customer,
       userProblem: idea.problem,
       solution: idea.solution,
     });
-    setShowImportDialog(false);
-    toast.push('프로젝트 정보를 불러왔습니다.');
+    toast.push(`"${idea.title}" 내용을 시작 정보로 가져왔어요.`);
+  };
+
+  const selectStartInfoSource = (source: StartInfoSource) => {
+    if (source === builder.startInfoSource) return;
+    if (source === 'manual') {
+      markDirty({ startInfoSource: 'manual', sourceIdeaId: null });
+      return;
+    }
+    // Generator 모드로 전환할 때, 이미 Generator에서 고른 아이디어가
+    // 있거나 후보가 하나뿐이면 그대로 이어받는다.
+    const preferred =
+      project.generator.ideas.find((i) => i.id === project.generator.selectedIdeaId) ??
+      (project.generator.ideas.length === 1 ? project.generator.ideas[0] : undefined);
+    if (preferred) {
+      applyIdeaToStartInfo(preferred.id);
+      return;
+    }
+    markDirty({ startInfoSource: 'generator' });
+  };
+
+  const runCriteriaSuggestion = () => {
+    const hasStartInfo = [builder.summary, builder.targetCustomer, builder.userProblem, builder.solution].some((v) => v.trim());
+    if (!hasStartInfo) {
+      toast.push('먼저 ① 시작 정보 탭에서 아이디어 내용을 입력해주세요.', 'error');
+      return;
+    }
+    setSuggesting(true);
+    window.setTimeout(() => {
+      const next = suggestCriteria(builder);
+      setSuggestions(next);
+      setSelectedSuggestionIds(next.map((s) => s.module.id));
+      setSuggesting(false);
+    }, 700);
+  };
+
+  const toggleSuggestion = (moduleId: string) => {
+    setSelectedSuggestionIds((ids) => (ids.includes(moduleId) ? ids.filter((id) => id !== moduleId) : [...ids, moduleId]));
+  };
+
+  const addSelectedSuggestions = () => {
+    if (!suggestions) return;
+    const picked = suggestions.filter((s) => selectedSuggestionIds.includes(s.module.id)).map((s) => criterionFromModule(s.module));
+    if (picked.length === 0) return;
+    markDirty({ criteria: [...builder.criteria, ...picked], criteriaSuggestedAt: new Date().toISOString() });
+    setSuggestions(null);
+    setSelectedSuggestionIds([]);
+    toast.push(`점검 기준 ${picked.length}개를 담았어요.`);
   };
 
   const sendToPlanner = () => {
@@ -287,23 +339,32 @@ export function BuilderPage() {
             />
 
             {tab === 'start' && (
-              <div className="flex flex-col gap-4 rounded-none border border-hairline bg-white p-5">
+              <div className="flex flex-col gap-5">
+                <StartInfoSourcePicker
+                  source={builder.startInfoSource}
+                  ideas={project.generator.ideas}
+                  sourceIdeaId={builder.sourceIdeaId}
+                  onSelectSource={selectStartInfoSource}
+                  onSelectIdea={applyIdeaToStartInfo}
+                />
+
+                <div className="flex flex-col gap-4 rounded-none border border-hairline bg-white p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-[13.5px] font-bold text-ink-strong">아이디어 시작 정보</p>
-                  {project.generator.ideas.length > 0 && (
-                    <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
-                      프로젝트 불러오기
-                    </Button>
+                  {builder.startInfoSource === 'generator' && builder.sourceIdeaId && (
+                    <span className="text-[12px] text-ink-faint">
+                      Generator 아이디어에서 가져옴 · 내용은 자유롭게 수정할 수 있어요
+                    </span>
                   )}
                 </div>
-                <Textarea label="아이디어 요약" rows={2} value={builder.summary} onChange={(e) => markDirty({ summary: e.target.value })} />
+                <Textarea label="아이디어 요약" dragLabel="아이디어 요약" rows={2} value={builder.summary} onChange={(e) => markDirty({ summary: e.target.value })} />
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Textarea label="타겟 고객" rows={2} value={builder.targetCustomer} onChange={(e) => markDirty({ targetCustomer: e.target.value })} />
-                  <Textarea label="사용자 문제" rows={2} value={builder.userProblem} onChange={(e) => markDirty({ userProblem: e.target.value })} />
-                  <Textarea label="해결 방안" rows={2} value={builder.solution} onChange={(e) => markDirty({ solution: e.target.value })} />
-                  <Textarea label="보유 근거" rows={2} value={builder.evidence} onChange={(e) => markDirty({ evidence: e.target.value })} />
-                  <Textarea label="핵심 가정" rows={2} value={builder.assumptions} onChange={(e) => markDirty({ assumptions: e.target.value })} />
-                  <Textarea label="현재 고민" rows={2} value={builder.currentConcerns} onChange={(e) => markDirty({ currentConcerns: e.target.value })} />
+                  <Textarea label="타겟 고객" dragLabel="타겟 고객" rows={2} value={builder.targetCustomer} onChange={(e) => markDirty({ targetCustomer: e.target.value })} />
+                  <Textarea label="사용자 문제" dragLabel="사용자 문제" rows={2} value={builder.userProblem} onChange={(e) => markDirty({ userProblem: e.target.value })} />
+                  <Textarea label="해결 방안" dragLabel="해결 방안" rows={2} value={builder.solution} onChange={(e) => markDirty({ solution: e.target.value })} />
+                  <Textarea label="보유 근거" dragLabel="보유 근거" rows={2} value={builder.evidence} onChange={(e) => markDirty({ evidence: e.target.value })} />
+                  <Textarea label="핵심 가정" dragLabel="핵심 가정" rows={2} value={builder.assumptions} onChange={(e) => markDirty({ assumptions: e.target.value })} />
+                  <Textarea label="현재 고민" dragLabel="현재 고민" rows={2} value={builder.currentConcerns} onChange={(e) => markDirty({ currentConcerns: e.target.value })} />
                 </div>
 
                 {builder.versions.length > 0 && (
@@ -318,6 +379,7 @@ export function BuilderPage() {
                     </ul>
                   </div>
                 )}
+                </div>
               </div>
             )}
 
@@ -338,18 +400,52 @@ export function BuilderPage() {
 
             {tab === 'criteria' && (
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between rounded-none border border-hairline bg-white p-4">
-                  <div>
-                    <p className="text-[13.5px] font-bold text-ink-strong">점검 기준 충족률</p>
-                    <p className="text-[12px] text-ink-muted">충족 상태는 직접 판단하여 표시해주세요.</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-32 overflow-hidden rounded-full bg-hairline">
-                      <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${criteriaProgress}%` }} />
+                {builder.criteria.length > 0 && (
+                  <div className="flex items-center justify-between rounded-none border border-hairline bg-white p-4">
+                    <div>
+                      <p className="text-[13.5px] font-bold text-ink-strong">점검 기준 충족률</p>
+                      <p className="text-[12px] text-ink-muted">충족 상태는 직접 판단하여 표시해주세요.</p>
                     </div>
-                    <span className="text-[13px] font-bold text-brand-strong">{criteriaProgress}%</span>
+                    <div className="flex items-center gap-3">
+                      <Button variant="outline" size="sm" onClick={runCriteriaSuggestion} loading={suggesting}>
+                        ✨ 기준 더 찾기
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-32 overflow-hidden rounded-full bg-hairline">
+                          <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${criteriaProgress}%` }} />
+                        </div>
+                        <span className="text-[13px] font-bold text-brand-strong">{criteriaProgress}%</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {suggestions && (
+                  <CriteriaSuggestionPanel
+                    suggestions={suggestions}
+                    selectedIds={selectedSuggestionIds}
+                    onToggle={toggleSuggestion}
+                    onAdd={addSelectedSuggestions}
+                    onDismiss={() => {
+                      setSuggestions(null);
+                      setSelectedSuggestionIds([]);
+                    }}
+                  />
+                )}
+
+                {builder.criteria.length === 0 && !suggestions && (
+                  <div className="flex flex-col items-center gap-3 rounded-none border border-dashed border-hairline-strong bg-white px-6 py-14 text-center">
+                    <span className="text-3xl">🧭</span>
+                    <p className="text-[14px] font-bold text-ink-strong">아이디어에 맞는 점검 기준을 골라드릴게요</p>
+                    <p className="max-w-md text-[12.5px] leading-relaxed text-ink-muted">
+                      ① 시작 정보와 ② 구체화 템플릿에 작성하신 내용을 읽고, 점검 기준 모듈 중에서 이 아이디어에 꼭 필요한
+                      항목만 추려 제안합니다.
+                    </p>
+                    <Button onClick={runCriteriaSuggestion} loading={suggesting}>
+                      ✨ AI로 점검 기준 추천받기
+                    </Button>
+                  </div>
+                )}
 
                 {builder.criteria.map((c) => (
                   <CriterionCard
@@ -366,17 +462,19 @@ export function BuilderPage() {
                   />
                 ))}
 
-                <div className="flex items-center gap-2 rounded-none border border-dashed border-hairline-strong bg-white p-3">
-                  <input
-                    value={newCriterionName}
-                    onChange={(e) => setNewCriterionName(e.target.value)}
-                    placeholder="새로운 점검 기준 이름 (예: 규제 리스크)"
-                    className="h-9 flex-1 rounded-lg border border-hairline-strong bg-white px-3 text-[13px] outline-none focus:border-brand"
-                  />
-                  <Button size="sm" variant="outline" onClick={addCriterion}>
-                    + 기준 추가
-                  </Button>
-                </div>
+                {builder.criteria.length > 0 && (
+                  <div className="flex items-center gap-2 rounded-none border border-dashed border-hairline-strong bg-white p-3">
+                    <input
+                      value={newCriterionName}
+                      onChange={(e) => setNewCriterionName(e.target.value)}
+                      placeholder="직접 추가할 점검 기준 이름 (예: 규제 리스크)"
+                      className="h-9 flex-1 rounded-none border border-hairline-strong bg-white px-3 text-[13px] outline-none focus:border-brand"
+                    />
+                    <Button size="sm" variant="outline" onClick={addCriterion}>
+                      + 기준 추가
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
         </div>
@@ -391,20 +489,6 @@ export function BuilderPage() {
         </div>
       </div>
 
-      <Dialog open={showImportDialog} onClose={() => setShowImportDialog(false)} title="프로젝트 불러오기" size="md">
-        <div className="flex flex-col gap-2">
-          {project.generator.ideas.map((idea) => (
-            <button
-              key={idea.id}
-              onClick={() => importFromIdea(idea.id)}
-              className="rounded-none border border-hairline p-3 text-left transition-colors hover:border-brand hover:bg-brand-soft/40"
-            >
-              <p className="text-[13.5px] font-bold text-ink-strong">{idea.title}</p>
-              <p className="mt-0.5 text-[12px] text-ink-muted line-clamp-2">{idea.oneLiner}</p>
-            </button>
-          ))}
-        </div>
-      </Dialog>
       </div>
     </AppShell>
   );

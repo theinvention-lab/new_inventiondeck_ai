@@ -1,5 +1,23 @@
 import type { BuilderTemplateDef, FormulaPart, TemplateSectionDef } from '../../data/builderTemplates';
 import { Textarea } from '../ui/Textarea';
+import { setFieldDragData } from '../../lib/fieldDrag';
+
+// 작성한 칸을 비즈니스 에이전트 채팅창으로 끌어다 놓기 위한 손잡이.
+// 내용이 비어 있으면 끌어봐야 의미가 없으므로 표시하지 않는다.
+function DragHandle({ label, value }: { label: string; value: string }) {
+  if (!value.trim()) return null;
+  return (
+    <span
+      draggable
+      onDragStart={(e) => setFieldDragData(e, { label, value })}
+      title="에이전트 채팅창으로 끌어다 놓기"
+      aria-label={`${label} 내용을 에이전트로 끌어가기`}
+      className="cursor-grab select-none text-[11px] leading-none text-ink-faint transition-colors hover:text-brand active:cursor-grabbing"
+    >
+      ⠿
+    </span>
+  );
+}
 
 interface FormulaRow {
   lead?: string;
@@ -51,6 +69,7 @@ function FormulaSection({
                 {idx + 1}
               </span>
               <span className="text-[12px] font-semibold leading-snug text-ink-strong">{row.blank.label}</span>
+              <DragHandle label={row.blank.label} value={values[row.blank.id] ?? ''} />
             </div>
             <div className="min-w-0">
               <Textarea
@@ -133,7 +152,10 @@ function BMCGrid({
       >
         {template.fields.map((f) => (
           <div key={f.id} style={{ gridArea: BMC_AREAS[f.id] }} className="flex flex-col gap-1.5 bg-white p-3">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-strong">{f.label}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-ink-strong">{f.label}</p>
+              <DragHandle label={f.label} value={values[f.id] ?? ''} />
+            </div>
             <textarea
               className="w-full flex-1 resize-none border-0 bg-transparent p-0 text-[12px] leading-relaxed text-ink outline-none placeholder:text-ink-faint"
               placeholder={f.placeholder}
@@ -166,7 +188,10 @@ export function TemplateFieldsForm({
         {template.sections.map((section) => (
           <section key={section.id} className="py-6">
             <div className="mb-3.5">
-              <h3 className="text-[14px] font-bold text-ink-strong">{section.title}</h3>
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-[14px] font-bold text-ink-strong">{section.title}</h3>
+                {section.textFieldId && <DragHandle label={section.title} value={values[section.textFieldId] ?? ''} />}
+              </div>
               <p className="mt-0.5 text-[11.5px] text-ink-muted">{section.subtitle}</p>
             </div>
 
@@ -203,10 +228,12 @@ export function TemplateFieldsForm({
           <Textarea
             key={f.id}
             label={f.label}
+            dragLabel={f.label}
             rows={3}
             placeholder={f.placeholder}
             value={values[f.id] ?? ''}
             onChange={(e) => onChange(f.id, e.target.value)}
+            style={{ borderRadius: 0 }}
           />
         ))}
       </div>

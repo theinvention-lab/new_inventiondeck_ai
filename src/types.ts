@@ -106,7 +106,13 @@ export type BuilderTemplateId =
   | 'bmc'
   | 'bm-narratives';
 
+// 시작 정보를 어떻게 채웠는지: 처음부터 직접 작성했는지, Generator에서
+// 만든 아이디어를 그대로 가져왔는지.
+export type StartInfoSource = 'manual' | 'generator';
+
 export interface BuilderState {
+  startInfoSource: StartInfoSource;
+  sourceIdeaId: string | null;
   summary: string;
   targetCustomer: string;
   userProblem: string;
@@ -114,8 +120,8 @@ export interface BuilderState {
   evidence: string;
   assumptions: string;
   currentConcerns: string;
-  chatMessages: ChatMessage[];
   criteria: CriterionEntry[];
+  criteriaSuggestedAt: string | null;
   autosaveStatus: 'idle' | 'saving' | 'saved' | 'error';
   lastSavedAt: string | null;
   versions: BuilderVersion[];
