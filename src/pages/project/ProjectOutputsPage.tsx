@@ -35,7 +35,8 @@ export function ProjectOutputsPage() {
   const builderCount =
     BUILDER_TEMPLATES.filter((t) => filledCount(project, t.id) > 0).length + (hasStartInfo(project) ? 1 : 0);
   const counts = {
-    generator: project.generator.ideas.length,
+    // Generator를 안 거쳤어도 시작 정보에 적은 아이디어 한 건은 잡아준다.
+    generator: project.generator.ideas.length || (hasStartInfo(project) ? 1 : 0),
     builder: builderCount,
     planner: (project.planner.bizPlanSections.length > 0 ? 1 : 0) + (project.planner.pitchSlides.length > 0 ? 1 : 0),
   };
@@ -161,14 +162,34 @@ function VersionList({ items }: { items: Array<{ id: string; label: string; save
   );
 }
 
+// Generator를 거치지 않고 Builder에 바로 적은 경우에도 이 프로젝트의
+// 아이디어는 존재한다. 시작 정보를 아이디어 한 건으로 보여준다.
+function ideaFromStartInfo(project: Project): IdeaDraft {
+  const b = project.builder;
+  return {
+    id: `${project.id}:start-info`,
+    title: project.title,
+    oneLiner: b.summary,
+    customer: b.targetCustomer,
+    problem: b.userProblem,
+    solution: b.solution,
+    valueProp: '',
+    revenue: '',
+    tags: [],
+    sections: [],
+    createdAt: project.createdAt,
+  };
+}
+
 function IdeaOutputs({ project, onGo }: { project: Project; onGo: () => void }) {
   const { ideas, selectedIdeaId, versions } = project.generator;
+  const fromStartInfo = ideas.length === 0 && hasStartInfo(project);
 
-  if (ideas.length === 0) {
+  if (ideas.length === 0 && !fromStartInfo) {
     return (
       <EmptyState
-        title="아직 만들어진 아이디어가 없습니다"
-        description="Generator에서 카드를 골라 아이디어를 생성해보세요."
+        title="아직 아이디어가 없습니다"
+        description="Generator에서 아이디어를 생성하거나, Builder의 시작 정보에 직접 적어보세요."
         action={<Button onClick={onGo}>Generator로 이동</Button>}
       />
     );
@@ -176,17 +197,29 @@ function IdeaOutputs({ project, onGo }: { project: Project; onGo: () => void }) 
 
   return (
     <div className="flex flex-col gap-5">
-      <SectionCard title="아이디어" caption={`${ideas.length}개 · Generator 산출물`}>
-        <div className="flex flex-col divide-y divide-hairline">
-          {ideas.map((idea) => (
-            <IdeaRow key={idea.id} idea={idea} selected={idea.id === selectedIdeaId} />
-          ))}
-        </div>
-      </SectionCard>
+      {fromStartInfo ? (
+        <SectionCard title="아이디어" caption="Builder 시작 정보에 직접 작성한 아이디어">
+          <div className="flex flex-col divide-y divide-hairline">
+            <IdeaRow idea={ideaFromStartInfo(project)} selected />
+          </div>
+        </SectionCard>
+      ) : (
+        <SectionCard title="아이디어" caption={`${ideas.length}개 · Generator 산출물`}>
+          <div className="flex flex-col divide-y divide-hairline">
+            {ideas.map((idea) => (
+              <IdeaRow key={idea.id} idea={idea} selected={idea.id === selectedIdeaId} />
+            ))}
+          </div>
+        </SectionCard>
+      )}
 
-      <SectionCard title="버전 기록" caption="Generator에서 저장한 아이디어 버전">
-        <VersionList items={versions.map((v) => ({ id: v.id, label: v.label, savedAt: v.savedAt, caption: v.snapshot.oneLiner }))} />
-      </SectionCard>
+      {!fromStartInfo && (
+        <SectionCard title="버전 기록" caption="Generator에서 저장한 아이디어 버전">
+          <VersionList
+            items={versions.map((v) => ({ id: v.id, label: v.label, savedAt: v.savedAt, caption: v.snapshot.oneLiner }))}
+          />
+        </SectionCard>
+      )}
     </div>
   );
 }
@@ -214,12 +247,15 @@ function IdeaRow({ idea, selected }: { idea: IdeaDraft; selected: boolean }) {
             ['해결 방안', idea.solution],
             ['가치 제안', idea.valueProp],
             ['수익 모델', idea.revenue],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-[11.5px] font-semibold text-ink-faint">{label}</dt>
-              <dd className="mt-0.5 text-[12.5px] leading-relaxed text-ink">{value || '—'}</dd>
-            </div>
-          ))}
+          ]
+            // 시작 정보에서 만든 아이디어는 일부 항목이 비어 있을 수 있다.
+            .filter(([, value]) => value.trim())
+            .map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-[11.5px] font-semibold text-ink-faint">{label}</dt>
+                <dd className="mt-0.5 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink">{value}</dd>
+              </div>
+            ))}
         </dl>
       )}
     </div>
