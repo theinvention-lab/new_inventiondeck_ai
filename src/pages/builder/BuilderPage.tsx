@@ -8,7 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CriterionCard } from '../../components/builder/CriterionCard';
 import { CriteriaSuggestionPanel } from '../../components/builder/CriteriaSuggestionPanel';
-import { StartInfoSourcePicker, type SavedIdeaOption } from '../../components/builder/StartInfoSourcePicker';
+import { StartInfoSourcePicker, type ProjectIdeaOption } from '../../components/builder/StartInfoSourcePicker';
 import { TemplateSelector } from '../../components/builder/TemplateSelector';
 import { TemplateFieldsForm } from '../../components/builder/TemplateFieldsForm';
 import { useAuthStore } from '../../store/authStore';
@@ -94,11 +94,11 @@ export function BuilderPage() {
     return builder.criteria.length ? Math.round((met / builder.criteria.length) * 100) : 0;
   }, [builder]);
 
-  // Case 3 후보 — 다른 프로젝트에 저장해둔 아이디어들
-  const savedIdeaOptions = useMemo<SavedIdeaOption[]>(() => {
-    return projects
-      .filter((p) => p.ownerEmail === currentEmail && !p.trashedAt && p.id !== projectId)
-      .flatMap((p) => p.generator.ideas.map((idea) => ({ project: p, idea })));
+  // 가져오기 후보 — 아이디어를 가진 내 프로젝트들. 현재 프로젝트를 맨 앞에 둔다.
+  const projectIdeaOptions = useMemo<ProjectIdeaOption[]>(() => {
+    const mine = projects.filter((p) => p.ownerEmail === currentEmail && !p.trashedAt);
+    const ordered = [...mine].sort((a, b) => Number(b.id === projectId) - Number(a.id === projectId));
+    return ordered.flatMap((p) => p.generator.ideas.map((idea) => ({ project: p, idea, isCurrent: p.id === projectId })));
   }, [projects, currentEmail, projectId]);
 
   // Case 1 — Generator에서 막 넘어온 경우, 손대지 않은 시작 정보라면
@@ -115,9 +115,9 @@ export function BuilderPage() {
     if (!idea) return;
     autoCarriedRef.current = true;
     updateBuilder(project.id, {
-      startInfoSource: 'generator',
+      startInfoSource: 'project',
       sourceIdeaId: idea.id,
-      sourceProjectId: null,
+      sourceProjectId: project.id,
       ...startInfoFromIdea(idea),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -266,23 +266,16 @@ export function BuilderPage() {
 
   const draftTemplateFromStartInfo = () => applyTemplateDraft();
 
-  const applyIdeaToStartInfo = (ideaId: string) => {
-    const idea = project.generator.ideas.find((i) => i.id === ideaId);
-    if (!idea) return;
-    markDirty({ startInfoSource: 'generator', sourceIdeaId: idea.id, sourceProjectId: null, ...startInfoFromIdea(idea) });
-    toast.push(`"${idea.title}" 내용을 시작 정보로 가져왔어요.`);
-  };
-
-  const applySavedIdeaToStartInfo = (fromProjectId: string, ideaId: string) => {
-    const option = savedIdeaOptions.find((o) => o.project.id === fromProjectId && o.idea.id === ideaId);
+  const applyProjectIdea = (fromProjectId: string, ideaId: string) => {
+    const option = projectIdeaOptions.find((o) => o.project.id === fromProjectId && o.idea.id === ideaId);
     if (!option) return;
     markDirty({
-      startInfoSource: 'saved',
+      startInfoSource: 'project',
       sourceIdeaId: option.idea.id,
       sourceProjectId: option.project.id,
       ...startInfoFromIdea(option.idea),
     });
-    toast.push(`"${option.project.title}"의 "${option.idea.title}"을(를) 시작 정보로 가져왔어요.`);
+    toast.push(`"${option.idea.title}" 내용을 시작 정보로 가져왔어요.`);
   };
 
   const selectStartInfoSource = (source: StartInfoSource) => {
@@ -291,25 +284,12 @@ export function BuilderPage() {
       markDirty({ startInfoSource: 'manual', sourceIdeaId: null, sourceProjectId: null });
       return;
     }
-    if (source === 'saved') {
-      // 후보가 하나뿐이면 굳이 한 번 더 고르게 하지 않는다.
-      if (savedIdeaOptions.length === 1) {
-        applySavedIdeaToStartInfo(savedIdeaOptions[0].project.id, savedIdeaOptions[0].idea.id);
-        return;
-      }
-      markDirty({ startInfoSource: 'saved', sourceIdeaId: null, sourceProjectId: null });
+    // 후보가 하나뿐이면 굳이 한 번 더 고르게 하지 않는다.
+    if (projectIdeaOptions.length === 1) {
+      applyProjectIdea(projectIdeaOptions[0].project.id, projectIdeaOptions[0].idea.id);
       return;
     }
-    // Generator 모드로 전환할 때, 이미 Generator에서 고른 아이디어가
-    // 있거나 후보가 하나뿐이면 그대로 이어받는다.
-    const preferred =
-      project.generator.ideas.find((i) => i.id === project.generator.selectedIdeaId) ??
-      (project.generator.ideas.length === 1 ? project.generator.ideas[0] : undefined);
-    if (preferred) {
-      applyIdeaToStartInfo(preferred.id);
-      return;
-    }
-    markDirty({ startInfoSource: 'generator', sourceIdeaId: null, sourceProjectId: null });
+    markDirty({ startInfoSource: 'project', sourceIdeaId: null, sourceProjectId: null });
   };
 
   const runCriteriaSuggestion = () => {
@@ -409,22 +389,17 @@ export function BuilderPage() {
               <div className="flex flex-col gap-5">
                 <StartInfoSourcePicker
                   source={builder.startInfoSource}
-                  ideas={project.generator.ideas}
-                  savedOptions={savedIdeaOptions}
+                  options={projectIdeaOptions}
                   sourceIdeaId={builder.sourceIdeaId}
                   onSelectSource={selectStartInfoSource}
-                  onSelectIdea={applyIdeaToStartInfo}
-                  onSelectSavedIdea={applySavedIdeaToStartInfo}
+                  onSelectIdea={applyProjectIdea}
                 />
 
                 <div className="flex flex-col gap-4 rounded-none border border-hairline bg-white p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-[13.5px] font-bold text-ink-strong">아이디어 시작 정보</p>
-                  {builder.startInfoSource !== 'manual' && builder.sourceIdeaId && (
-                    <span className="text-[12px] text-ink-faint">
-                      {builder.startInfoSource === 'generator' ? 'Generator 아이디어' : '저장된 아이디어'}에서 가져옴 · 나머지
-                      항목을 채워주세요
-                    </span>
+                  {builder.startInfoSource === 'project' && builder.sourceIdeaId && (
+                    <span className="text-[12px] text-ink-faint">프로젝트 아이디어에서 가져옴 · 나머지 항목을 채워주세요</span>
                   )}
                 </div>
                 <Textarea label="아이디어 요약" dragLabel="아이디어 요약" rows={2} value={builder.summary} onChange={(e) => markDirty({ summary: e.target.value })} />

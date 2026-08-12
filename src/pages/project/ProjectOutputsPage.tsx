@@ -11,15 +11,16 @@ import { BUILDER_TEMPLATES } from '../../data/builderTemplates';
 import { formatDateTime, relativeTime } from '../../lib/format';
 import type { BuilderTemplateId, IdeaDraft, PlanSection, PitchSlide, Project } from '../../types';
 
-type OutputTab = 'idea' | 'template' | 'plan';
+type OutputTab = 'generator' | 'builder' | 'planner';
 
 export function ProjectOutputsPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const currentEmail = useAuthStore((s) => s.currentEmail);
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
+  const updateProject = useProjectStore((s) => s.updateProject);
 
-  const [tab, setTab] = useState<OutputTab>('idea');
+  const [tab, setTab] = useState<OutputTab>('generator');
 
   if (!project || project.ownerEmail !== currentEmail) {
     return (
@@ -31,50 +32,93 @@ export function ProjectOutputsPage() {
     );
   }
 
+  const builderCount =
+    BUILDER_TEMPLATES.filter((t) => filledCount(project, t.id) > 0).length + (hasStartInfo(project) ? 1 : 0);
   const counts = {
-    idea: project.generator.ideas.length,
-    template: BUILDER_TEMPLATES.filter((t) => filledCount(project, t.id) > 0).length,
-    plan: (project.planner.bizPlanGenerated ? 1 : 0) + (project.planner.pitchDeckGenerated ? 1 : 0),
+    generator: project.generator.ideas.length,
+    builder: builderCount,
+    planner: (project.planner.bizPlanSections.length > 0 ? 1 : 0) + (project.planner.pitchSlides.length > 0 ? 1 : 0),
   };
 
   return (
     <AppShell>
       <div className="mx-auto max-w-6xl px-5 py-6 pb-16">
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-[12px] font-semibold text-ink-faint">프로젝트 산출물</p>
-            <h1 className="mt-0.5 text-[20px] font-bold text-ink-strong">{project.title}</h1>
-            <p className="mt-1 text-[12px] text-ink-muted">최근 수정 {relativeTime(project.updatedAt)}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate(`/project/${project.id}/generator`)}>
-              Generator
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate(`/project/${project.id}/builder`)}>
-              Builder
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate(`/project/${project.id}/planner`)}>
-              Planner
-            </Button>
-          </div>
+        <div className="mb-5">
+          <p className="text-[12px] font-semibold text-ink-faint">프로젝트 산출물</p>
+          <EditableTitle value={project.title} onSave={(title) => updateProject(project.id, { title })} />
+          <p className="mt-1 text-[12px] text-ink-muted">최근 수정 {relativeTime(project.updatedAt)}</p>
         </div>
 
         <Tabs
           items={[
-            { id: 'idea', label: '아이디어', badge: counts.idea },
-            { id: 'template', label: '구체화 템플릿', badge: counts.template },
-            { id: 'plan', label: '사업계획서 · IR Deck', badge: counts.plan },
+            { id: 'generator', label: 'Generator', badge: counts.generator },
+            { id: 'builder', label: 'Builder', badge: counts.builder },
+            { id: 'planner', label: 'Planner', badge: counts.planner },
           ]}
           activeId={tab}
           onChange={(id) => setTab(id as OutputTab)}
           className="mb-5 border-b border-hairline"
         />
 
-        {tab === 'idea' && <IdeaOutputs project={project} onGo={() => navigate(`/project/${project.id}/generator`)} />}
-        {tab === 'template' && <TemplateOutputs project={project} onGo={() => navigate(`/project/${project.id}/builder`)} />}
-        {tab === 'plan' && <PlanOutputs project={project} onGo={() => navigate(`/project/${project.id}/planner`)} />}
+        {tab === 'generator' && <IdeaOutputs project={project} onGo={() => navigate(`/project/${project.id}/generator`)} />}
+        {tab === 'builder' && <TemplateOutputs project={project} onGo={() => navigate(`/project/${project.id}/builder`)} />}
+        {tab === 'planner' && <PlanOutputs project={project} onGo={() => navigate(`/project/${project.id}/planner`)} />}
       </div>
     </AppShell>
+  );
+}
+
+// 프로젝트 이름은 채택한 아이디어 이름으로 들어오지만, 여기서 직접 고쳐 쓸 수 있다.
+function EditableTitle({ value, onSave }: { value: string; onSave: (title: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  const commit = () => {
+    const next = draft.trim();
+    if (next && next !== value) onSave(next);
+    else setDraft(value);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') {
+            setDraft(value);
+            setEditing(false);
+          }
+        }}
+        aria-label="프로젝트 이름"
+        className="mt-0.5 w-full max-w-lg rounded-none border border-brand bg-white px-2 py-1 text-[20px] font-bold text-ink-strong outline-none"
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => {
+        setDraft(value);
+        setEditing(true);
+      }}
+      title="클릭해서 이름 수정"
+      className="group mt-0.5 flex items-center gap-2 text-left"
+    >
+      <h1 className="text-[20px] font-bold text-ink-strong">{value}</h1>
+      <span className="text-[13px] text-ink-faint opacity-0 transition-opacity group-hover:opacity-100">✎</span>
+    </button>
+  );
+}
+
+function hasStartInfo(project: Project): boolean {
+  const b = project.builder;
+  return [b.summary, b.targetCustomer, b.userProblem, b.solution, b.evidence, b.assumptions, b.currentConcerns].some((v) =>
+    v.trim(),
   );
 }
 
@@ -188,19 +232,47 @@ function TemplateOutputs({ project, onGo }: { project: Project; onGo: () => void
     [project],
   );
   const { versions, criteria } = project.builder;
+  const startInfo = hasStartInfo(project);
 
-  if (written.length === 0) {
+  if (written.length === 0 && !startInfo && criteria.length === 0) {
     return (
       <EmptyState
-        title="작성된 구체화 템플릿이 없습니다"
-        description="Builder의 ② 구체화 템플릿 탭에서 아이디어를 정리해보세요."
+        title="Builder에서 작성한 내용이 없습니다"
+        description="시작 정보를 채우고 구체화 템플릿을 작성해보세요."
         action={<Button onClick={onGo}>Builder로 이동</Button>}
       />
     );
   }
 
+  const b = project.builder;
+
   return (
     <div className="flex flex-col gap-5">
+      {startInfo && (
+        <SectionCard title="시작 정보" caption="Builder에 직접 입력한 아이디어 내용">
+          <dl className="grid gap-3 px-5 py-4 sm:grid-cols-2">
+            {(
+              [
+                ['아이디어 요약', b.summary],
+                ['타겟 고객', b.targetCustomer],
+                ['사용자 문제', b.userProblem],
+                ['해결 방안', b.solution],
+                ['보유 근거', b.evidence],
+                ['핵심 가정', b.assumptions],
+                ['현재 고민', b.currentConcerns],
+              ] as const
+            )
+              .filter(([, value]) => value.trim())
+              .map(([label, value]) => (
+                <div key={label}>
+                  <dt className="text-[11.5px] font-semibold text-ink-faint">{label}</dt>
+                  <dd className="mt-0.5 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink">{value}</dd>
+                </div>
+              ))}
+          </dl>
+        </SectionCard>
+      )}
+
       {written.map((template) => {
         const values = project.builder.templateValues[template.id] ?? {};
         return (
@@ -253,13 +325,17 @@ function TemplateOutputs({ project, onGo }: { project: Project; onGo: () => void
 }
 
 function PlanOutputs({ project, onGo }: { project: Project; onGo: () => void }) {
-  const { bizPlanSections, pitchSlides, bizPlanGenerated, pitchDeckGenerated, lastExport, versions } = project.planner;
+  const { bizPlanSections, pitchSlides, lastExport, versions } = project.planner;
 
-  if (!bizPlanGenerated && !pitchDeckGenerated) {
+  // AI로 만들었든 직접 손봤든, 내용이 남아 있으면 산출물로 본다.
+  const hasBizPlan = bizPlanSections.length > 0;
+  const hasDeck = pitchSlides.length > 0;
+
+  if (!hasBizPlan && !hasDeck) {
     return (
       <EmptyState
-        title="아직 생성된 문서가 없습니다"
-        description="Planner에서 사업계획서와 IR Deck 초안을 만들어보세요."
+        title="Planner에서 작성한 문서가 없습니다"
+        description="Planner에서 사업계획서와 IR Deck을 만들어보세요."
         action={<Button onClick={onGo}>Planner로 이동</Button>}
       />
     );
@@ -267,7 +343,7 @@ function PlanOutputs({ project, onGo }: { project: Project; onGo: () => void }) 
 
   return (
     <div className="flex flex-col gap-5">
-      {bizPlanGenerated && (
+      {hasBizPlan && (
         <SectionCard title="📄 사업계획서" caption={`${bizPlanSections.length}개 섹션`}>
           <ul className="flex flex-col divide-y divide-hairline">
             {[...bizPlanSections]
@@ -282,7 +358,7 @@ function PlanOutputs({ project, onGo }: { project: Project; onGo: () => void }) 
         </SectionCard>
       )}
 
-      {pitchDeckGenerated && (
+      {hasDeck && (
         <SectionCard title="📊 IR Deck" caption={`${pitchSlides.length}장`}>
           <ul className="flex flex-col divide-y divide-hairline">
             {[...pitchSlides]

@@ -132,8 +132,18 @@ export function GeneratorPage() {
     }, 900);
   };
 
+  // 아직 사용자가 이름을 정하지 않은 프로젝트인지
+  const isDefaultProjectTitle = (title: string) =>
+    ['새로운 아이디어', '새로운 프로젝트', '이름 없는 프로젝트', ''].includes(title.trim());
+
   const selectAsAdopted = (ideaId: string) => {
     updateGenerator(project.id, { selectedIdeaId: ideaId });
+    // 프로젝트 하나가 곧 아이디어 하나이므로, 아직 기본 이름이면 채택한
+    // 아이디어 이름을 프로젝트 이름으로 쓴다. (이후 산출물 페이지에서 수정 가능)
+    const idea = gen.ideas.find((i) => i.id === ideaId);
+    if (idea && isDefaultProjectTitle(project.title)) {
+      updateProject(project.id, { title: idea.title });
+    }
   };
 
   const sendToBuilder = () => {

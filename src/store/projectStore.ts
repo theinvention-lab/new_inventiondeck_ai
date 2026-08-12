@@ -211,7 +211,7 @@ export const useProjectStore = create<ProjectStoreState>()(
     {
       name: 'inventiondeck:projects',
       storage: createJSONStorage(() => localStorage),
-      version: 6,
+      version: 7,
       migrate: (persisted, fromVersion) => {
         const state = persisted as { projects?: Array<Record<string, unknown>> } | undefined;
         if (state?.projects) {
@@ -312,6 +312,17 @@ export const useProjectStore = create<ProjectStoreState>()(
             if (fromVersion < 6) {
               const planner = (next.planner as Record<string, unknown>) ?? {};
               next = { ...next, planner: { ...planner, versions: planner.versions ?? [] } };
+            }
+
+            // v6 → v7: 프로젝트 하나가 곧 아이디어 하나이므로, 시작 정보
+            // 가져오기를 'project' 한 가지로 합친다.
+            if (fromVersion < 7) {
+              const builder = (next.builder as Record<string, unknown>) ?? defaultBuilder();
+              const source = builder.startInfoSource;
+              next = {
+                ...next,
+                builder: { ...builder, startInfoSource: source === 'manual' || !source ? 'manual' : 'project' },
+              };
             }
 
             return next;

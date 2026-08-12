@@ -109,11 +109,9 @@ export type BuilderTemplateId =
   | 'bmc'
   | 'bm-narratives';
 
-// 시작 정보를 어떻게 채웠는지.
-//  - manual:    처음부터 직접 작성 (Case 2)
-//  - generator: 이 프로젝트의 Generator에서 만든 아이디어를 이어받음 (Case 1)
-//  - saved:     내 프로젝트에 저장해둔 다른 아이디어를 가져옴 (Case 3)
-export type StartInfoSource = 'manual' | 'generator' | 'saved';
+// 시작 정보를 어떻게 채웠는지. 프로젝트 하나가 아이디어 하나이므로,
+// 가져오기는 '어느 프로젝트에서 가져왔는가' 한 가지로 통일한다.
+export type StartInfoSource = 'manual' | 'project';
 
 export interface BuilderState {
   startInfoSource: StartInfoSource;
