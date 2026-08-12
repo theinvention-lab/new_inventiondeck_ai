@@ -77,7 +77,16 @@ export function PlannerPage() {
     window.setTimeout(() => {
       window.clearInterval(interval);
       const sections = buildDefaultBizPlanSections({ generator: project.generator, builder: project.builder, title: project.title });
-      updatePlanner(project.id, { bizPlanSections: sections, bizPlanGenerated: true, bizPlanProgress: 100 });
+      const versionNo = planner.versions.filter((v) => v.kind === 'bizplan').length + 1;
+      updatePlanner(project.id, {
+        bizPlanSections: sections,
+        bizPlanGenerated: true,
+        bizPlanProgress: 100,
+        versions: [
+          { id: makeId('pver'), kind: 'bizplan', label: `사업계획서 v${versionNo}`, savedAt: new Date().toISOString(), sections },
+          ...planner.versions,
+        ],
+      });
       setBizGenProgress(100);
       window.setTimeout(() => setBizGenProgress(null), 500);
       setGeneratingBiz(false);
@@ -94,7 +103,16 @@ export function PlannerPage() {
     window.setTimeout(() => {
       window.clearInterval(interval);
       const slides = buildDefaultPitchSlides({ generator: project.generator, builder: project.builder, title: project.title });
-      updatePlanner(project.id, { pitchSlides: slides, pitchDeckGenerated: true, pitchDeckProgress: 100 });
+      const versionNo = planner.versions.filter((v) => v.kind === 'pitchdeck').length + 1;
+      updatePlanner(project.id, {
+        pitchSlides: slides,
+        pitchDeckGenerated: true,
+        pitchDeckProgress: 100,
+        versions: [
+          { id: makeId('pver'), kind: 'pitchdeck', label: `IR Deck v${versionNo}`, savedAt: new Date().toISOString(), slides },
+          ...planner.versions,
+        ],
+      });
       setActiveSlideId(slides[0]?.id ?? null);
       setPitchGenProgress(100);
       window.setTimeout(() => setPitchGenProgress(null), 500);

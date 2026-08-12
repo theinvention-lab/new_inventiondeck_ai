@@ -70,13 +70,6 @@ export interface ChatMessage {
 
 export type CriterionStatus = 'unmet' | 'partial' | 'met';
 
-export interface CriterionAttachment {
-  id: string;
-  name: string;
-  dataUrl: string;
-  isImage: boolean;
-}
-
 export interface CriterionEntry {
   id: string;
   name: string;
@@ -88,7 +81,6 @@ export interface CriterionEntry {
   status: CriterionStatus;
   weight: number;
   custom?: boolean;
-  attachments: CriterionAttachment[];
 }
 
 export interface BuilderVersion {
@@ -96,6 +88,17 @@ export interface BuilderVersion {
   label: string;
   savedAt: string;
   savedBy: string;
+  /** 저장 시점의 내용. 산출물 관리 페이지에서 버전별로 되돌아볼 때 쓴다. */
+  snapshot?: BuilderSnapshot;
+}
+
+export interface BuilderSnapshot {
+  summary: string;
+  targetCustomer: string;
+  userProblem: string;
+  solution: string;
+  templateValues: Partial<Record<BuilderTemplateId, Record<string, string>>>;
+  criteria: CriterionEntry[];
 }
 
 export type BuilderTemplateId =
@@ -106,13 +109,17 @@ export type BuilderTemplateId =
   | 'bmc'
   | 'bm-narratives';
 
-// 시작 정보를 어떻게 채웠는지: 처음부터 직접 작성했는지, Generator에서
-// 만든 아이디어를 그대로 가져왔는지.
-export type StartInfoSource = 'manual' | 'generator';
+// 시작 정보를 어떻게 채웠는지.
+//  - manual:    처음부터 직접 작성 (Case 2)
+//  - generator: 이 프로젝트의 Generator에서 만든 아이디어를 이어받음 (Case 1)
+//  - saved:     내 프로젝트에 저장해둔 다른 아이디어를 가져옴 (Case 3)
+export type StartInfoSource = 'manual' | 'generator' | 'saved';
 
 export interface BuilderState {
   startInfoSource: StartInfoSource;
   sourceIdeaId: string | null;
+  /** 'saved' 모드에서 아이디어를 가져온 다른 프로젝트의 id */
+  sourceProjectId: string | null;
   summary: string;
   targetCustomer: string;
   userProblem: string;
@@ -148,6 +155,15 @@ export interface PitchSlide {
 
 export type DesignTemplateId = 'naver-mint' | 'ink-mono' | 'sunrise' | 'slate-pro';
 
+export interface PlannerVersion {
+  id: string;
+  kind: 'bizplan' | 'pitchdeck';
+  label: string;
+  savedAt: string;
+  sections?: PlanSection[];
+  slides?: PitchSlide[];
+}
+
 export interface PlannerState {
   bizPlanSections: PlanSection[];
   pitchSlides: PitchSlide[];
@@ -157,6 +173,7 @@ export interface PlannerState {
   bizPlanProgress: number;
   pitchDeckProgress: number;
   lastExport: { type: 'pdf' | 'ppt'; at: string; filename: string } | null;
+  versions: PlannerVersion[];
 }
 
 export type ProjectStage = 'generator' | 'builder' | 'planner' | 'completed';

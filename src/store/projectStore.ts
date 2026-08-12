@@ -29,6 +29,7 @@ function defaultBuilder(): BuilderState {
   return {
     startInfoSource: 'manual',
     sourceIdeaId: null,
+    sourceProjectId: null,
     summary: '',
     targetCustomer: '',
     userProblem: '',
@@ -58,6 +59,7 @@ function defaultPlanner(): PlannerState {
     bizPlanProgress: 0,
     pitchDeckProgress: 0,
     lastExport: null,
+    versions: [],
   };
 }
 
@@ -209,7 +211,7 @@ export const useProjectStore = create<ProjectStoreState>()(
     {
       name: 'inventiondeck:projects',
       storage: createJSONStorage(() => localStorage),
-      version: 5,
+      version: 6,
       migrate: (persisted, fromVersion) => {
         const state = persisted as { projects?: Array<Record<string, unknown>> } | undefined;
         if (state?.projects) {
@@ -245,19 +247,13 @@ export const useProjectStore = create<ProjectStoreState>()(
               next = { ...next, builder, planner, deck, stage };
             }
 
-            // v2 → v3: Builder gains the 6-template worksheet, and each
-            // criterion gains an attachments list.
+            // v2 → v3: Builder gains the 6-template worksheet.
             if (fromVersion < 3) {
               const builder = (next.builder as Record<string, unknown>) ?? defaultBuilder();
-              const criteria = ((builder.criteria as CriterionEntry[]) ?? []).map((c) => ({
-                ...c,
-                attachments: c.attachments ?? [],
-              }));
               next = {
                 ...next,
                 builder: {
                   ...builder,
-                  criteria,
                   activeTemplateId: builder.activeTemplateId ?? 'idea-definition',
                   templateValues: builder.templateValues ?? {},
                 },
@@ -285,6 +281,7 @@ export const useProjectStore = create<ProjectStoreState>()(
                   (oldPlanner.lastExport as PlannerState['lastExport']) ??
                   (oldDeck.lastExport as PlannerState['lastExport']) ??
                   null,
+                versions: [],
               };
               const stage = next.stage === 'deck' ? 'planner' : next.stage;
               const rest = { ...next };
@@ -303,11 +300,18 @@ export const useProjectStore = create<ProjectStoreState>()(
                   ...builder,
                   startInfoSource: builder.startInfoSource ?? 'manual',
                   sourceIdeaId: builder.sourceIdeaId ?? null,
+                  sourceProjectId: builder.sourceProjectId ?? null,
                   criteriaSuggestedAt:
                     builder.criteriaSuggestedAt ??
                     (((builder.criteria as CriterionEntry[]) ?? []).length > 0 ? new Date().toISOString() : null),
                 },
               };
+            }
+
+            // v5 → v6: Planner 산출물도 버전 기록을 남긴다.
+            if (fromVersion < 6) {
+              const planner = (next.planner as Record<string, unknown>) ?? {};
+              next = { ...next, planner: { ...planner, versions: planner.versions ?? [] } };
             }
 
             return next;

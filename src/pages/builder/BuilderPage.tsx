@@ -8,7 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CriterionCard } from '../../components/builder/CriterionCard';
 import { CriteriaSuggestionPanel } from '../../components/builder/CriteriaSuggestionPanel';
-import { StartInfoSourcePicker } from '../../components/builder/StartInfoSourcePicker';
+import { StartInfoSourcePicker, type SavedIdeaOption } from '../../components/builder/StartInfoSourcePicker';
 import { TemplateSelector } from '../../components/builder/TemplateSelector';
 import { TemplateFieldsForm } from '../../components/builder/TemplateFieldsForm';
 import { useAuthStore } from '../../store/authStore';
@@ -19,10 +19,21 @@ import { suggestCriteria, criterionFromModule, type CriterionSuggestion } from '
 import { makeId } from '../../lib/id';
 import { relativeTime, formatDateTime } from '../../lib/format';
 import { getBuilderTemplate } from '../../data/builderTemplates';
-import type { CriterionEntry, BuilderTemplateId, StartInfoSource } from '../../types';
+import type { CriterionEntry, BuilderTemplateId, IdeaDraft, StartInfoSource } from '../../types';
 
 const AUTOSAVE_DELAY = 1000;
 const SIMULATED_FAILURE_RATE = 0.12;
+
+// 아이디어에서 시작 정보로 그대로 옮길 수 있는 항목만 추린다. 나머지(근거·
+// 가정·고민)는 사용자가 직접 채우는 몫이라 건드리지 않는다.
+function startInfoFromIdea(idea: IdeaDraft) {
+  return {
+    summary: idea.oneLiner,
+    targetCustomer: idea.customer,
+    userProblem: idea.problem,
+    solution: idea.solution,
+  };
+}
 
 export function BuilderPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -32,6 +43,7 @@ export function BuilderPage() {
   const currentUser = useAuthStore((s) => s.currentUser());
 
   const project = useProjectStore((s) => s.projects.find((p) => p.id === projectId));
+  const projects = useProjectStore((s) => s.projects);
   const updateBuilder = useProjectStore((s) => s.updateBuilder);
   const updateProject = useProjectStore((s) => s.updateProject);
 
@@ -82,6 +94,35 @@ export function BuilderPage() {
     return builder.criteria.length ? Math.round((met / builder.criteria.length) * 100) : 0;
   }, [builder]);
 
+  // Case 3 후보 — 다른 프로젝트에 저장해둔 아이디어들
+  const savedIdeaOptions = useMemo<SavedIdeaOption[]>(() => {
+    return projects
+      .filter((p) => p.ownerEmail === currentEmail && !p.trashedAt && p.id !== projectId)
+      .flatMap((p) => p.generator.ideas.map((idea) => ({ project: p, idea })));
+  }, [projects, currentEmail, projectId]);
+
+  // Case 1 — Generator에서 막 넘어온 경우, 손대지 않은 시작 정보라면
+  // 고른 아이디어를 그대로 반영해준다.
+  const autoCarriedRef = useRef(false);
+  useEffect(() => {
+    if (autoCarriedRef.current || !project || !builder) return;
+    if (builder.startInfoSource !== 'manual' || builder.sourceIdeaId) return;
+    const untouched = ![builder.summary, builder.targetCustomer, builder.userProblem, builder.solution].some((v) => v.trim());
+    if (!untouched) return;
+    const idea =
+      project.generator.ideas.find((i) => i.id === project.generator.selectedIdeaId) ??
+      (project.generator.ideas.length === 1 ? project.generator.ideas[0] : undefined);
+    if (!idea) return;
+    autoCarriedRef.current = true;
+    updateBuilder(project.id, {
+      startInfoSource: 'generator',
+      sourceIdeaId: idea.id,
+      sourceProjectId: null,
+      ...startInfoFromIdea(idea),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project?.id]);
+
   if (!project || !builder || project.ownerEmail !== currentEmail) {
     return (
       <AppShell>
@@ -109,7 +150,20 @@ export function BuilderPage() {
         autosaveStatus: 'saved',
         lastSavedAt: new Date().toISOString(),
         versions: [
-          { id: makeId('bver'), label: `버전 ${builder.versions.length + 1}`, savedAt: new Date().toISOString(), savedBy: currentUser?.name ?? '나' },
+          {
+            id: makeId('bver'),
+            label: `버전 ${builder.versions.length + 1}`,
+            savedAt: new Date().toISOString(),
+            savedBy: currentUser?.name ?? '나',
+            snapshot: {
+              summary: builder.summary,
+              targetCustomer: builder.targetCustomer,
+              userProblem: builder.userProblem,
+              solution: builder.solution,
+              templateValues: builder.templateValues,
+              criteria: builder.criteria,
+            },
+          },
           ...builder.versions,
         ],
       });
@@ -135,7 +189,6 @@ export function BuilderPage() {
       status: 'unmet',
       weight: 1,
       custom: true,
-      attachments: [],
     };
     markDirty({ criteria: [...builder.criteria, criterion] });
     setNewCriterionName('');
@@ -216,21 +269,35 @@ export function BuilderPage() {
   const applyIdeaToStartInfo = (ideaId: string) => {
     const idea = project.generator.ideas.find((i) => i.id === ideaId);
     if (!idea) return;
-    markDirty({
-      startInfoSource: 'generator',
-      sourceIdeaId: idea.id,
-      summary: idea.oneLiner,
-      targetCustomer: idea.customer,
-      userProblem: idea.problem,
-      solution: idea.solution,
-    });
+    markDirty({ startInfoSource: 'generator', sourceIdeaId: idea.id, sourceProjectId: null, ...startInfoFromIdea(idea) });
     toast.push(`"${idea.title}" 내용을 시작 정보로 가져왔어요.`);
+  };
+
+  const applySavedIdeaToStartInfo = (fromProjectId: string, ideaId: string) => {
+    const option = savedIdeaOptions.find((o) => o.project.id === fromProjectId && o.idea.id === ideaId);
+    if (!option) return;
+    markDirty({
+      startInfoSource: 'saved',
+      sourceIdeaId: option.idea.id,
+      sourceProjectId: option.project.id,
+      ...startInfoFromIdea(option.idea),
+    });
+    toast.push(`"${option.project.title}"의 "${option.idea.title}"을(를) 시작 정보로 가져왔어요.`);
   };
 
   const selectStartInfoSource = (source: StartInfoSource) => {
     if (source === builder.startInfoSource) return;
     if (source === 'manual') {
-      markDirty({ startInfoSource: 'manual', sourceIdeaId: null });
+      markDirty({ startInfoSource: 'manual', sourceIdeaId: null, sourceProjectId: null });
+      return;
+    }
+    if (source === 'saved') {
+      // 후보가 하나뿐이면 굳이 한 번 더 고르게 하지 않는다.
+      if (savedIdeaOptions.length === 1) {
+        applySavedIdeaToStartInfo(savedIdeaOptions[0].project.id, savedIdeaOptions[0].idea.id);
+        return;
+      }
+      markDirty({ startInfoSource: 'saved', sourceIdeaId: null, sourceProjectId: null });
       return;
     }
     // Generator 모드로 전환할 때, 이미 Generator에서 고른 아이디어가
@@ -242,7 +309,7 @@ export function BuilderPage() {
       applyIdeaToStartInfo(preferred.id);
       return;
     }
-    markDirty({ startInfoSource: 'generator' });
+    markDirty({ startInfoSource: 'generator', sourceIdeaId: null, sourceProjectId: null });
   };
 
   const runCriteriaSuggestion = () => {
@@ -343,17 +410,20 @@ export function BuilderPage() {
                 <StartInfoSourcePicker
                   source={builder.startInfoSource}
                   ideas={project.generator.ideas}
+                  savedOptions={savedIdeaOptions}
                   sourceIdeaId={builder.sourceIdeaId}
                   onSelectSource={selectStartInfoSource}
                   onSelectIdea={applyIdeaToStartInfo}
+                  onSelectSavedIdea={applySavedIdeaToStartInfo}
                 />
 
                 <div className="flex flex-col gap-4 rounded-none border border-hairline bg-white p-5">
                 <div className="flex items-center justify-between">
                   <p className="text-[13.5px] font-bold text-ink-strong">아이디어 시작 정보</p>
-                  {builder.startInfoSource === 'generator' && builder.sourceIdeaId && (
+                  {builder.startInfoSource !== 'manual' && builder.sourceIdeaId && (
                     <span className="text-[12px] text-ink-faint">
-                      Generator 아이디어에서 가져옴 · 내용은 자유롭게 수정할 수 있어요
+                      {builder.startInfoSource === 'generator' ? 'Generator 아이디어' : '저장된 아이디어'}에서 가져옴 · 나머지
+                      항목을 채워주세요
                     </span>
                   )}
                 </div>
@@ -390,7 +460,7 @@ export function BuilderPage() {
                     사업 특성에 맞는 구체화 템플릿을 선택하고, 항목별로 작성해보세요. 템플릿을 바꿔도 이전에 작성한 내용은 유지됩니다.
                   </p>
                   <Button variant="outline" size="sm" onClick={draftTemplateFromStartInfo} className="shrink-0">
-                    ✨ 시작 정보로 초안 작성
+                    ✨ 시작 정보로 채우기
                   </Button>
                 </div>
                 <TemplateSelector activeId={builder.activeTemplateId} onSelect={selectTemplate} filledCount={filledCount} />

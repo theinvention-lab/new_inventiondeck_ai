@@ -11,6 +11,7 @@ import { MyPage } from './pages/mypage/MyPage';
 import { GeneratorPage } from './pages/generator/GeneratorPage';
 import { BuilderPage } from './pages/builder/BuilderPage';
 import { PlannerPage } from './pages/planner/PlannerPage';
+import { ProjectOutputsPage } from './pages/project/ProjectOutputsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { useAuthStore } from './store/authStore';
 
@@ -45,6 +46,14 @@ function App() {
         element={
           <ProtectedRoute>
             <MyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId"
+        element={
+          <ProtectedRoute>
+            <ProjectOutputsPage />
           </ProtectedRoute>
         }
       />

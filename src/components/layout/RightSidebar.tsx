@@ -126,9 +126,11 @@ export function RightSidebar() {
     [notes, email],
   );
 
-  const openProject = (id: string, stage: string) => {
+  // 프로젝트를 고르면 바로 단계 화면으로 보내지 않고, 그 프로젝트의
+  // 산출물(아이디어·템플릿·문서)을 버전별로 볼 수 있는 페이지로 간다.
+  const openProject = (id: string) => {
     setOpenPanel(null);
-    navigate(`/project/${id}/${stage === 'completed' ? 'planner' : stage}`);
+    navigate(`/project/${id}`);
   };
 
   const handleCreateProject = () => {
@@ -227,7 +229,7 @@ export function RightSidebar() {
                   >
                     ✕
                   </button>
-                  <button onClick={() => openProject(p.id, p.stage)} className="flex flex-col gap-1 pr-5 text-left">
+                  <button onClick={() => openProject(p.id)} className="flex flex-col gap-1 pr-5 text-left">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="truncate text-[13.5px] font-bold text-ink-strong">{p.title}</h3>
                       <span className="shrink-0 rounded-full bg-canvas-sunken px-2 py-0.5 text-[10.5px] font-semibold text-ink-faint">

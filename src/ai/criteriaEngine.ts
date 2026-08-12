@@ -78,6 +78,5 @@ export function criterionFromModule(module: CriterionModule): CriterionEntry {
     nextAction: '',
     status: 'unmet',
     weight: 1,
-    attachments: [],
   };
 }
